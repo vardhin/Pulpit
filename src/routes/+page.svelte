@@ -6,6 +6,7 @@
   // Initialize dark mode from localStorage
   let isDarkMode = false;
   let backgroundImage = '';
+  let isLoading = true;
 
   // Collection of nature images for hero section
   const natureImages = [
@@ -32,6 +33,10 @@
       document.body.classList.add('dark-mode');
     }
     loadBackgroundImage();
+    
+    setTimeout(() => {
+      isLoading = false;
+    }, 2000);
   });
 
   function scrollToSection(sectionId) {
@@ -50,6 +55,14 @@
     }
   }
 </script>
+
+{#if isLoading}
+  <div class="loading-overlay" class:fade-out={!isLoading}>
+    <div class="loading-content">
+      <div class="loading-text">Pulpit</div>
+    </div>
+  </div>
+{/if}
 
 <nav>
   <div class="nav-content">
@@ -516,5 +529,70 @@
         width: 18px;
         height: 18px;
         stroke: currentColor;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #000000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 1;
+        transition: all 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+
+    .loading-overlay.fade-out {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .loading-content {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .loading-text {
+        font-family: 'Playfair Display', 'Cormorant Garamond', serif;
+        font-size: 5rem;
+        color: white;
+        font-weight: 400;
+        font-style: italic;
+        opacity: 0;
+        transform: translateY(20px) rotate(-5deg);
+        animation: textAnimation 2s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
+        text-shadow: 
+          0 0 20px rgba(255,255,255,0.4),
+          0 0 40px rgba(255,255,255,0.2),
+          0 0 60px rgba(255,255,255,0.1);
+    }
+
+    @keyframes textAnimation {
+        0% {
+            opacity: 0;
+            transform: translateY(30px) rotate(-8deg) scale(0.95);
+            filter: blur(8px);
+        }
+        25% {
+            opacity: 1;
+            transform: translateY(0) rotate(-5deg) scale(1);
+            filter: blur(0);
+        }
+        85% {
+            opacity: 1;
+            transform: translateY(0) rotate(-5deg) scale(1);
+            filter: blur(0);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-20px) rotate(-3deg) scale(1.05);
+            filter: blur(12px);
+        }
     }
 </style>
