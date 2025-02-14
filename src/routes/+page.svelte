@@ -34,9 +34,10 @@
     }
     loadBackgroundImage();
     
+    // Remove loading state after a short delay
     setTimeout(() => {
       isLoading = false;
-    }, 2000);
+    }, 500);
   });
 
   function scrollToSection(sectionId) {
@@ -59,7 +60,7 @@
 {#if isLoading}
   <div class="loading-overlay" class:fade-out={!isLoading}>
     <div class="loading-content">
-      <div class="loading-text">Pulpit</div>
+      <div class="loading-text">Pulpit!</div>
     </div>
   </div>
 {/if}
@@ -128,13 +129,7 @@
                     <img src="/pulpit.jpeg" alt="Logo" />
                 </div>
                 <div class="brand-name-container">
-                    <HandwritingAnimation 
-                        text="pulpit!" 
-                        fontSize={38}
-                        strokeWidth={2.3}
-                        color="#EEEEEE"
-                        duration={2000}
-                    />
+                    <div class="loading-text-unanimated">Pulpit!</div>
                 </div>
             </div>
         </div>
@@ -594,5 +589,18 @@
             transform: translateY(-20px) rotate(-3deg) scale(1.05);
             filter: blur(12px);
         }
+    }
+
+    .loading-text-unanimated {
+        font-family: 'Playfair Display', 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        color: white;
+        font-weight: 400;
+        font-style: italic;
+        text-shadow: 
+            0 0 20px rgba(255,255,255,0.4),
+            0 0 40px rgba(255,255,255,0.2),
+            0 0 60px rgba(255,255,255,0.1);
+        transform: rotate(-5deg);
     }
 </style>
