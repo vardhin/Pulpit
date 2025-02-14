@@ -10,8 +10,8 @@
     let mounted = false;
 
     // Size constraints
-    const MIN_SIZE = 24;
-    const MAX_SIZE = 36;
+    const MIN_SIZE = 18;
+    const MAX_SIZE = 26;
     
     // Maximum number of concurrent quotes
     const MAX_QUOTES = 5;
@@ -107,15 +107,18 @@
         const containerHeight = window.innerHeight;
         
         while (attempts < maxAttempts) {
-            // Adjust safe zones to favor top-left positioning
-            const safeZoneWidth = containerWidth * 0.7;  // Increased width of safe zone
-            const safeZoneHeight = containerHeight * 0.7; // Increased height of safe zone
-            const offsetX = containerWidth * 0.1; // Reduced to 0.1 to start more from left
-            const offsetY = containerHeight * 0.1; // Reduced to 0.1 to start more from top
+            // Adjust safe zones to heavily favor top positioning
+            const safeZoneWidth = containerWidth * 0.7;    // 70% of width
+            const safeZoneHeight = containerHeight * 0.4;  // Only 40% of height from top
+            const offsetX = containerWidth * 0.05;         // Start 5% from left
+            const offsetY = containerHeight * 0.02;        // Start 2% from top
             
-            // Generate position within safe zones
+            // Use square root for vertical position to bias towards top
+            const verticalBias = Math.sqrt(Math.random());
+            
+            // Generate position with stronger top bias
             const left = (offsetX + Math.random() * safeZoneWidth) / containerWidth * 100;
-            const top = (offsetY + Math.random() * safeZoneHeight) / containerHeight * 100;
+            const top = (offsetY + verticalBias * safeZoneHeight) / containerHeight * 100;
             
             if (!isOverlapping({ left, top }, estimatedWidth, estimatedHeight)) {
                 return { left, top, rotation: 0 };
@@ -193,21 +196,14 @@
                         fontUrl,
                         [
                             {
-                                text: quote.text,
+                                text: `${quote.text}
+                                -${quote.author}`,
                                 fontSize: MIN_SIZE + Math.random() * (MAX_SIZE - MIN_SIZE),
                                 strokeWidth: 1.5,
-                                color: 'rgba(255, 235, 205, 0.9)',
+                                color: 'var(--text-primary)',
                                 duration: 3000,
-                                textAlign: 'left'
-                            },
-                            {
-                                text: `-${quote.author}`,
-                                y: -20,
-                                fontSize: Math.max(MIN_SIZE * 0.5, 25),
-                                strokeWidth: 1.3,
-                                color: 'rgba(255, 228, 181, 0.85)',
-                                duration: 3000,
-                                textAlign: 'left'
+                                textAlign: 'left',
+                                letterSpacing: 1
                             }
                         ],
                         {
@@ -319,6 +315,7 @@
         opacity: 1;
         background: transparent;
         overflow: visible;
+        padding: 10px;
     }
 
     :global(.floating-quote.fade-out) {
@@ -326,11 +323,26 @@
     }
 
     :global(.floating-quote svg) {
-        filter: drop-shadow(0 0 3px rgba(255, 228, 181, 0.2));
+        filter: drop-shadow(0 0 3px var(--quote-shadow));
         overflow: visible;
+        font-family: 'Times New Roman', serif;
+        margin: 5px;
     }
 
     :global(.floating-quote:hover svg) {
         transform: none;
+    }
+
+    /* Add CSS variables for quote styling */
+    :root {
+        --text-primary: #191D32;
+        --text-secondary: rgba(25, 29, 50, 0.85);
+        --quote-shadow: rgba(2, 103, 193, 0.2);
+    }
+
+    :global(body.dark-mode) {
+        --text-primary: #EEEEEE;
+        --text-secondary: rgba(238, 238, 238, 0.85);
+        --quote-shadow: rgba(2, 103, 193, 0.3);
     }
 </style>

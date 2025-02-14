@@ -2,29 +2,46 @@
   import { onMount } from 'svelte';
   import Vara from 'vara';
 
-  export let text = "Hello World"; // Text to animate
-  export let fontSize = 40;
-  export let strokeWidth = 0.7;
+  export let text;
+  export let fontSize = 22;
+  export let strokeWidth = 2;
+  export let color = '#000';
+  export let duration = 2000;
+
+  let container;
+  const containerId = `vara-container-${Math.random().toString(36).substr(2, 9)}`;
+
+  // Change the font URL to a different handwriting font
+  const fontUrl = 'https://raw.githubusercontent.com/akzhy/Vara/master/fonts/Pacifico/PacificoSLO.json';
+  // Alternative fonts you can try:
+  // 'https://raw.githubusercontent.com/akzhy/Vara/master/fonts/Pacifico/PacificoSLO.json'
+  // 'https://raw.githubusercontent.com/akzhy/Vara/master/fonts/Satisfy/SatisfySL.json'
 
   onMount(() => {
+    container.id = containerId;
     new Vara(
-      "#vara-container",
-      "https://raw.githubusercontent.com/akzhy/Vara/master/fonts/Satisfy/SatisfySL.json",
+      `#${containerId}`,
+      fontUrl,
       [{
-        text: text,
-        fontSize: fontSize,
-        strokeWidth: strokeWidth,
-      }]
+        text,
+        fontSize,
+        strokeWidth,
+        color,
+        duration,
+        textAlign: 'center'
+      }],
+      {
+        ready: () => console.log('Font loaded')
+      }
     );
   });
 </script>
 
-<div id="vara-container"></div>
+<div bind:this={container}></div>
 
 <style>
-  #vara-container {
+  div {
     width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
+    height: 100%;
   }
 </style>
