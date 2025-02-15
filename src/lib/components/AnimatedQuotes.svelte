@@ -14,7 +14,7 @@
     const MAX_SIZE = 26;
     
     // Maximum number of concurrent quotes
-    const MAX_QUOTES = 5;
+    const MAX_QUOTES = 3;
 
     // Define safe zones for quote placement
     const MARGIN = 1; // Reduced from 10 to 5 to allow quotes to spread more
