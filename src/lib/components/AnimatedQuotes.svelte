@@ -9,9 +9,9 @@
     let quoteInterval;
     let mounted = false;
 
-    // Size constraints
-    const MIN_SIZE = 18;
-    const MAX_SIZE = 26;
+    // Size constraints - changed to viewport width percentages
+    const MIN_SIZE = 1.2; // 1.2vw
+    const MAX_SIZE = 2;   // 2vw
     
     // Maximum number of concurrent quotes
     const MAX_QUOTES = 2;
@@ -66,11 +66,12 @@
     }
 
     function calculateQuoteDimensions(text, fontSize) {
-        // Rough estimation of quote dimensions based on text length and font size
+        // Adjust fontSize calculation to use viewport width
+        const actualFontSize = (fontSize * window.innerWidth) / 100;
         const charsPerLine = 40;
         const lines = Math.ceil(text.length / charsPerLine);
-        const width = Math.min(400, window.innerWidth * 0.25); // 25% of viewport width or 400px
-        const height = (lines * fontSize * 1.5) + 40; // Account for line height and padding
+        const width = Math.min(400, window.innerWidth * 0.25);
+        const height = (lines * actualFontSize * 1.5) + 40;
         return { width, height };
     }
 
@@ -215,7 +216,8 @@
                             {
                                 text: `${quote.text}
                                 -${quote.author}`,
-                                fontSize: MIN_SIZE + Math.random() * (MAX_SIZE - MIN_SIZE),
+                                // Convert vw to pixels for Vara
+                                fontSize: (MIN_SIZE + Math.random() * (MAX_SIZE - MIN_SIZE)) * window.innerWidth / 100,
                                 strokeWidth: 1.5,
                                 color: 'var(--text-primary)',
                                 duration: 3000,
