@@ -65,69 +65,86 @@
         quoteQueue = [...quoteQueue, ...shuffled];
     }
 
-    function isOverlapping(newPos, newWidth, newHeight) {
-        if (typeof document === 'undefined') return false;
-        
-        const containerWidth = window.innerWidth;
-        const containerHeight = window.innerHeight;
-        const newLeft = (newPos.left * containerWidth) / 100;
-        const newTop = (newPos.top * containerHeight) / 100;
-        
-        // Check against all stored positions
-        for (const pos of quotePositions) {
-            const posLeft = (pos.left * containerWidth) / 100;
-            const posTop = (pos.top * containerHeight) / 100;
-            const buffer = 100; // Buffer for spacing between quotes
-            
-            if (!(newLeft + newWidth + buffer < posLeft ||
-                  newLeft - buffer > posLeft + pos.width ||
-                  newTop + newHeight + buffer < posTop ||
-                  newTop - buffer > posTop + pos.height)) {
-                return true;
-            }
-        }
-        
-        // Increase viewport buffer for safer margins
-        const viewportBuffer = 50; // Increased from 30 to 50
-        if (newLeft < viewportBuffer ||
-            newLeft + newWidth > containerWidth - viewportBuffer ||
-            newTop < viewportBuffer ||
-            newTop + newHeight > containerHeight - viewportBuffer) {
-            return true;
-        }
-        
-        return false;
+    function calculateQuoteDimensions(text, fontSize) {
+        // Rough estimation of quote dimensions based on text length and font size
+        const charsPerLine = 40;
+        const lines = Math.ceil(text.length / charsPerLine);
+        const width = Math.min(400, window.innerWidth * 0.25); // 25% of viewport width or 400px
+        const height = (lines * fontSize * 1.5) + 40; // Account for line height and padding
+        return { width, height };
     }
 
-    function getRandomPosition(estimatedWidth, estimatedHeight) {
-        const maxAttempts = 100;
-        let attempts = 0;
+    function isOverlapping(newPosition, newDimensions, safeZoneBounds) {
+        // Calculate buffer as 10% of the smaller safe zone dimension
+        const bufferSize = Math.min(safeZoneBounds.width, safeZoneBounds.height) * 0.1;
         
-        const containerWidth = window.innerWidth;
-        const containerHeight = window.innerHeight;
-        
-        while (attempts < maxAttempts) {
-            // Adjust safe zones to heavily favor top positioning
-            const safeZoneWidth = containerWidth * 0.7;    // 70% of width
-            const safeZoneHeight = containerHeight * 0.4;  // Only 40% of height from top
-            const offsetX = containerWidth * 0.05;         // Start 5% from left
-            const offsetY = containerHeight * 0.02;        // Start 2% from top
+        // Check safe zone boundaries with buffer
+        if (newPosition.left < bufferSize ||
+            newPosition.left + newDimensions.width > safeZoneBounds.width - bufferSize ||
+            newPosition.top < bufferSize ||
+            newPosition.top + newDimensions.height > safeZoneBounds.height - bufferSize) {
+            return true;
+        }
+
+        // Check overlap with existing quotes
+        return quotePositions.some(existingQuote => {
+            // Calculate the minimum required spacing between quotes
+            const requiredSpacing = bufferSize;
+
+            // Check if quotes are too close horizontally
+            const horizontalOverlap = Math.abs(
+                (newPosition.left + newDimensions.width / 2) - 
+                (existingQuote.left + existingQuote.width / 2)
+            ) < (newDimensions.width / 2 + existingQuote.width / 2 + requiredSpacing);
+
+            // Check if quotes are too close vertically
+            const verticalOverlap = Math.abs(
+                (newPosition.top + newDimensions.height / 2) - 
+                (existingQuote.top + existingQuote.height / 2)
+            ) < (newDimensions.height / 2 + existingQuote.height / 2 + requiredSpacing);
+
+            return horizontalOverlap && verticalOverlap;
+        });
+    }
+
+    function findSafePosition(dimensions) {
+        const safeZone = document.querySelector('.quote-container');
+        if (!safeZone) return null;
+
+        const safeZoneBounds = safeZone.getBoundingClientRect();
+        const maxAttempts = 150; // Increased attempts for better distribution
+        const bufferSize = Math.min(safeZoneBounds.width, safeZoneBounds.height) * 0.1;
+
+        // Create a grid system for more organized placement
+        const gridSize = Math.max(dimensions.width, dimensions.height) + bufferSize * 2;
+        const cols = Math.floor(safeZoneBounds.width / gridSize);
+        const rows = Math.floor(safeZoneBounds.height / gridSize);
+
+        // Try grid-aligned positions first
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            let position;
             
-            // Use square root for vertical position to bias towards top
-            const verticalBias = Math.sqrt(Math.random());
-            
-            // Generate position with stronger top bias
-            const left = (offsetX + Math.random() * safeZoneWidth) / containerWidth * 100;
-            const top = (offsetY + verticalBias * safeZoneHeight) / containerHeight * 100;
-            
-            if (!isOverlapping({ left, top }, estimatedWidth, estimatedHeight)) {
-                return { left, top, rotation: 0 };
+            if (attempt < (cols * rows)) {
+                // Try grid-aligned positions first
+                const col = attempt % cols;
+                const row = Math.floor(attempt / cols);
+                position = {
+                    left: col * gridSize + bufferSize,
+                    top: row * gridSize + bufferSize
+                };
+            } else {
+                // Fall back to random positions if grid positions are full
+                position = {
+                    left: bufferSize + Math.random() * (safeZoneBounds.width - dimensions.width - 2 * bufferSize),
+                    top: bufferSize + Math.random() * (safeZoneBounds.height - dimensions.height - 2 * bufferSize)
+                };
             }
-            
-            attempts++;
+
+            if (!isOverlapping(position, dimensions, safeZoneBounds)) {
+                return position;
+            }
         }
         
-        // If no position found after max attempts, return null
         return null;
     }
 
@@ -150,24 +167,23 @@
         const quote = quoteQueue[0];
         quoteQueue = quoteQueue.slice(1);
         
-        const containerWidth = window.innerWidth;
-        const containerHeight = window.innerHeight;
-        const estimatedWidth = Math.min(400, containerWidth * 0.25);
-        const estimatedHeight = 150;
+        const fontSize = MIN_SIZE + Math.random() * (MAX_SIZE - MIN_SIZE);
+        const dimensions = calculateQuoteDimensions(quote.text, fontSize);
         
-        const position = getRandomPosition(estimatedWidth, estimatedHeight);
+        const position = findSafePosition(dimensions);
         if (!position) {
             console.log('No safe position found for quote');
             return;
         }
-        
-        // Add position to tracked positions
-        quotePositions.push({
+
+        // Store quote position with exact dimensions
+        const quoteData = {
             left: position.left,
             top: position.top,
-            width: estimatedWidth,
-            height: estimatedHeight
-        });
+            width: dimensions.width,
+            height: dimensions.height
+        };
+        quotePositions = [...quotePositions, quoteData];
         
         const containerId = `quote-${Math.random().toString(36).substr(2, 9)}`;
         
@@ -177,10 +193,11 @@
                 container.className = 'floating-quote';
                 container.id = containerId;
                 
-                container.style.left = `${position.left}%`;
-                container.style.top = `${position.top}%`;
-                container.style.transform = `rotate(${position.rotation}deg)`;
-                container.style.padding = '20px';
+                // Position the quote using the calculated safe position
+                container.style.left = `${position.left}px`;
+                container.style.top = `${position.top}px`;
+                container.style.width = `${dimensions.width}px`;
+                container.style.minHeight = `${dimensions.height}px`;
                 
                 const quoteContainer = document.querySelector('.quote-container');
                 if (!quoteContainer) {
@@ -262,7 +279,6 @@
         if (quoteInterval) clearInterval(quoteInterval);
         quotePositions = []; // Clear positions on destroy
         
-        // Add browser environment check
         if (typeof document !== 'undefined') {
             const container = document.querySelector('.quote-container');
             if (container) {
@@ -299,7 +315,6 @@
         pointer-events: none;
         z-index: 1;
         overflow: hidden;
-        border: 2px solid rgba(255, 255, 255, 0.1);
         box-sizing: border-box;
         background: transparent;
     }
@@ -308,10 +323,6 @@
         position: absolute;
         pointer-events: none;
         transition: opacity 2s ease-in-out;
-        width: 25vw;
-        max-width: 500px;
-        min-height: 50px;
-        margin: 20px;
         opacity: 1;
         background: transparent;
         overflow: visible;

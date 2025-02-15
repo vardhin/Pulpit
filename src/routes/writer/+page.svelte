@@ -2,6 +2,7 @@
     import { browser } from '$app/environment';
     import { onMount } from 'svelte';
     import { page } from '$app/stores';
+    import SafeZone from '$lib/components/SafeZone.svelte';
 
     let content = '';
     let wordCount = 0;
@@ -15,7 +16,7 @@
     let apiKey = 'AIzaSyDmUL1q-p4HcDrp3UUih6PANUbMK7xCXok'; // You'll need to set this to your Gemini API key
     let isPromptBarOpen = false;
     let promptInstructions = '';
-    let fontSize = 1.2; // default size in rem
+    let fontSize = '1.4rem'; /* default size */
 
     // Add new dark mode state
     let isDarkMode = false;
@@ -703,7 +704,7 @@
 {:else}
   <!-- Existing app content -->
   <div class="app" class:dark-mode={isDarkMode} style="background-image: {backgroundImage}; font-size: {fontSize}rem">
-    <div class="writing-container" class:dark-mode={isDarkMode} style:font-size="{fontSize}rem">
+    <div class="writing-container" class:dark-mode={isDarkMode} style:font-size="clamp(1.2rem, 1.4vw, 1.8rem)">
         {#if isPreviewMode}
             <div 
                 class="markdown-preview"
@@ -743,6 +744,17 @@
         <div class="hero-loading-text">Pulpit</div>
     </div>
 </div>
+
+<!-- Example usage with circular menu -->
+{#if isCircularMenuOpen}
+    <div class="menu-container">
+        <SafeZone position={circularMenuPosition}>
+            <div class="circular-menu">
+                <!-- menu items -->
+            </div>
+        </SafeZone>
+    </div>
+{/if}
 
 <style>
     /* Replace the loading screen styles with these */
@@ -1035,26 +1047,28 @@
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
         backdrop-filter: blur(14px);
         width: 70%;
-        height: 100vh;
+        height: 90vh; /* Reduced from 100vh to prevent overlap */
         box-sizing: border-box;
-        margin: 0 auto;
-        padding: 2%;
+        margin: 2rem auto; /* Added vertical margin */
+        padding: 6rem; /* Increased padding */
     }
 
     textarea {
         flex: 1;
         width: 100%;
         min-height: 0;
-        padding: 0;
+        padding: 3rem; /* Increased padding */
+        margin: 1rem 0; /* Added vertical margin */
         border: none;
         resize: none;
-        line-height: 1.8;
+        line-height: 2; /* Increased line height */
         font-family: inherit;
         background-color: transparent;
         color: #1a202c;
         border-radius: 0;
         overflow-y: auto;
         box-sizing: border-box;
+        font-size: clamp(1rem, 1.2vw, 1.4rem); /* Responsive font size with bounds */
     }
 
     textarea:focus {
@@ -1234,6 +1248,8 @@
         flex-direction: column;
         gap: 0.5rem;
         margin-bottom: 1rem;
+        --min-font-size: 0.8rem;
+        --max-font-size: 2rem;
     }
 
     .font-size-container label {
@@ -1634,14 +1650,16 @@
     .markdown-preview {
         flex: 1;
         width: 100%;
-        padding: 0;
-        line-height: 1.8;
+        padding: 3rem; /* Increased padding */
+        margin: 1rem 0; /* Added vertical margin */
+        line-height: 2; /* Increased line height */
         font-family: inherit;
         background-color: transparent;
         border-radius: 0;
         overflow-y: auto;
         box-sizing: border-box;
         cursor: pointer;
+        font-size: clamp(1rem, 1.2vw, 1.4rem); /* Responsive font size with bounds */
     }
 
     /* Style markdown elements */
@@ -1946,5 +1964,31 @@
           0 0 20px rgba(255,255,255,0.4),
           0 0 40px rgba(255,255,255,0.2),
           0 0 60px rgba(255,255,255,0.1);
+    }
+
+    .menu-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1100;
+    }
+
+    /* Add responsive padding for mobile */
+    @media (max-width: 768px) {
+        .writing-container {
+            width: 90%;
+            height: 85vh;
+            padding: 3rem;
+            margin: 1rem auto;
+        }
+
+        textarea,
+        .markdown-preview {
+            padding: 1.5rem;
+            font-size: clamp(0.9rem, 1.1vw, 1.2rem);
+        }
     }
 </style>

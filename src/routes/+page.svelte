@@ -305,7 +305,7 @@
         width: 75%;
         position: relative;
         background-color: var(--bg-primary);
-        backdrop-filter: blur(14px);
+        backdrop-filter: blur(12px);
         box-shadow: 0 2px 12px var(--panel-shadow);
         transition: all 0.3s ease;
         background-size: cover;
@@ -327,10 +327,10 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: rgba(255, 255, 255, 0.7);
+        background-color: rgba(255, 255, 255, 0.4);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        opacity: 0.95;
+        opacity: 0.85;
         transition: background-color 0.3s ease;
     }
 
@@ -339,8 +339,9 @@
     }
 
     .logo {
-        width: 300px;
-        height: 300px;
+        width: 60%;
+        max-width: 300px;
+        aspect-ratio: 1;
         border-radius: 50%;
         overflow: hidden;
     }
@@ -354,7 +355,7 @@
 
     .cards-section {
         min-height: 100vh;
-        padding: 4rem 2rem;
+        padding: 4rem 2%;
         background: rgba(25, 29, 50, 0.05);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
@@ -362,10 +363,10 @@
     }
 
     .cards-container {
-        max-width: 1200px;
+        max-width: 90%;
         margin: 0 auto;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
         gap: 2rem;
         padding: 1rem;
     }
@@ -378,7 +379,7 @@
         box-shadow: 
             0 8px 32px rgba(0, 0, 0, 0.1),
             inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-        border-radius: 8px;
+        border-radius: 0.5rem;
         padding: 1.5rem;
         box-shadow: 
             0 4px 6px rgba(25, 29, 50, 0.2),
@@ -415,9 +416,9 @@
     }
 
     .nav-content {
-        max-width: 1200px;
+        max-width: 90%;
         margin: 0 auto;
-        padding: 0.5rem 2rem;
+        padding: 0.5rem 2%;
         display: flex;
         justify-content: flex-end;
         align-items: center;
@@ -428,7 +429,7 @@
         gap: 0.5rem;
         padding: 0.25rem;
         background: rgba(255, 255, 255, 0.3);
-        border-radius: 10px;
+        border-radius: 0.625rem;
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid rgba(255, 255, 255, 0.4);
@@ -448,7 +449,7 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        border-radius: 8px;
+        border-radius: 0.5rem;
         text-decoration: none;
     }
 
@@ -468,7 +469,7 @@
         align-items: center;
         justify-content: center;
         transition: all 0.2s ease;
-        border-radius: 8px;
+        border-radius: 0.5rem;
     }
 
     .dark-mode-toggle:hover {
@@ -504,7 +505,7 @@
 
     /* Add CSS variables for consistent theming */
     :global(:root) {
-        --bg-primary: rgba(255, 255, 255, 0.7);
+        --bg-primary: rgba(255, 255, 255, 0.5);
         --text-primary: #191D32;
         --panel-shadow: rgba(0, 0, 0, 0.15);
         --border-color: rgba(25, 29, 50, 0.35);
@@ -521,8 +522,8 @@
 
     /* Fix dark mode toggle button */
     .dark-mode-toggle svg {
-        width: 18px;
-        height: 18px;
+        width: 1.125rem;
+        height: 1.125rem;
         stroke: currentColor;
     }
 
@@ -560,7 +561,7 @@
         font-weight: 400;
         font-style: italic;
         opacity: 0;
-        transform: translateY(20px) rotate(-5deg);
+        transform: translateY(1.25rem) rotate(-5deg);
         animation: textAnimation 2s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
         text-shadow: 
           0 0 20px rgba(255,255,255,0.4),
@@ -571,8 +572,8 @@
     @keyframes textAnimation {
         0% {
             opacity: 0;
-            transform: translateY(30px) rotate(-8deg) scale(0.95);
-            filter: blur(8px);
+            transform: translateY(1.875rem) rotate(-8deg) scale(0.95);
+            filter: blur(0.5rem);
         }
         25% {
             opacity: 1;
@@ -586,8 +587,8 @@
         }
         100% {
             opacity: 0;
-            transform: translateY(-20px) rotate(-3deg) scale(1.05);
-            filter: blur(12px);
+            transform: translateY(-1.25rem) rotate(-3deg) scale(1.05);
+            filter: blur(0.75rem);
         }
     }
 
@@ -602,5 +603,50 @@
             0 0 40px rgba(255,255,255,0.2),
             0 0 60px rgba(255,255,255,0.1);
         transform: rotate(-5deg);
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            flex-direction: column;
+        }
+
+        .hero-left, .hero-right {
+            width: 100%;
+        }
+
+        .hero-left {
+            height: 40vh;
+        }
+
+        .hero-right {
+            height: 60vh;
+        }
+
+        .logo {
+            width: 40%;
+        }
+
+        .loading-text {
+            font-size: 3rem;
+        }
+
+        .loading-text-unanimated {
+            font-size: 2rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .nav-links span {
+            display: none;
+        }
+
+        .nav-links button,
+        .nav-links a.nav-button {
+            padding: 0.35rem;
+        }
+
+        .logo {
+            width: 50%;
+        }
     }
 </style>
