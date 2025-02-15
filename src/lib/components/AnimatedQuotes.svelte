@@ -8,11 +8,9 @@
     let quotePositions = []; // Array to track all quote positions
     let quoteInterval;
     let mounted = false;
+    let MIN_SIZE = 0.8;  // Default values
+    let MAX_SIZE = 1.4;
 
-    // Size constraints - changed to viewport width percentages
-    const MIN_SIZE = 1.2; // 1.2vw
-    const MAX_SIZE = 2;   // 2vw
-    
     // Maximum number of concurrent quotes
     const MAX_QUOTES = 2;
 
@@ -66,8 +64,12 @@
     }
 
     function calculateQuoteDimensions(text, fontSize) {
-        // Adjust fontSize calculation to use viewport width
-        const actualFontSize = (fontSize * window.innerWidth) / 100;
+        // Base size calculation with bounds
+        const baseSize = 16; // Base font size in pixels
+        const actualFontSize = Math.min(
+            Math.max(baseSize * 0.8, fontSize * window.innerWidth / 100),
+            baseSize * 2
+        );
         const charsPerLine = 40;
         const lines = Math.ceil(text.length / charsPerLine);
         const width = Math.min(400, window.innerWidth * 0.25);
@@ -261,19 +263,22 @@
         }
     }
 
-    onMount(async () => {
+    onMount(() => {
+        // Initialize window-dependent values after mounting
+        MIN_SIZE = Math.min(0.8, window.innerWidth * 0.008);
+        MAX_SIZE = Math.min(1.4, window.innerWidth * 0.012);
         mounted = true;
-        await fetchQuotes();
         
-        // More time between initial quotes
-        for(let i = 0; i < MAX_QUOTES; i++) {
-            setTimeout(createQuote, i * 2500); // 2.5 second delay between each initial quote
-        }
-        
-        // Longer interval for regular quotes
-        setTimeout(() => {
-            quoteInterval = setInterval(createQuote, 4000); // 4 second interval
-        }, MAX_QUOTES * 2500);
+        // Rest of onMount logic
+        fetchQuotes().then(() => {
+            for(let i = 0; i < MAX_QUOTES; i++) {
+                setTimeout(createQuote, i * 2500);
+            }
+            
+            setTimeout(() => {
+                quoteInterval = setInterval(createQuote, 4000);
+            }, MAX_QUOTES * 2500);
+        });
     });
 
     onDestroy(() => {
