@@ -2,7 +2,6 @@
     import { browser } from '$app/environment';
     import { onMount } from 'svelte';
     import { page } from '$app/stores';
-    import SafeZone from '$lib/components/SafeZone.svelte';
 
     let content = '';
     let wordCount = 0;
@@ -16,7 +15,7 @@
     let apiKey = 'AIzaSyDmUL1q-p4HcDrp3UUih6PANUbMK7xCXok'; // You'll need to set this to your Gemini API key
     let isPromptBarOpen = false;
     let promptInstructions = '';
-    let fontSize = '1.4rem'; /* default size */
+    let fontSize = 1.2; // default size in rem
 
     // Add new dark mode state
     let isDarkMode = false;
@@ -202,38 +201,54 @@
     }
 
     function loadFont(fontFamily) {
-        if (!browser) return; // Only run on client-side
+        if (!browser) return;
         
-        const link = document.createElement('link');
-        link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(' ', '+')}:wght@400;700&display=swap`;
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-        document.body.style.fontFamily = `"${fontFamily}", sans-serif`;
+        // Update the existing link or create a new one
+        let link = document.querySelector(`link[href*="${fontFamily}"]`);
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'stylesheet';
+            document.head.appendChild(link);
+        }
+        link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(' ', '+')}:wght@300;400;500;600;700&display=swap`;
     }
 
-    // Add new loading state
-    let isLoading = true;
-    
-    // Update onMount to handle loading state
-    onMount(() => {
-        Promise.all([
-            loadBackgroundImage(),
-            loadFont(selectedFont)
-        ]).then(() => {
-            // Check if dark mode was previously enabled
-            if (browser) {
+    // Modify the onMount function
+    onMount(async () => {
+        if (browser) {
+            try {
+                // Add Google Fonts link dynamically first
+                const link = document.createElement('link');
+                link.href = 'https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap';
+                link.rel = 'stylesheet';
+                document.head.appendChild(link);
+
+                // Then wait for fonts to load
+                await document.fonts.ready;
+                
+                // Now load other fonts and initialize
+                loadFont(selectedFont);
+                loadBackgroundImage();
+                
+                // Check dark mode preference
                 const storedDarkMode = localStorage.getItem('darkMode') === 'true';
                 isDarkMode = storedDarkMode;
                 if (storedDarkMode) {
                     document.body.classList.add('dark-mode');
                 }
-            }
-            loadFiles();
-            // Updated to 3 seconds
-            setTimeout(() => {
+                
+                loadFiles();
+                
+                // Remove loading screen after everything is ready
+                setTimeout(() => {
+                    isLoading = false;
+                }, 500);
+            } catch (error) {
+                console.error('Failed to initialize:', error);
+                // Fallback - remove loading screen even if initialization fails
                 isLoading = false;
-            }, 3000);
-        });
+            }
+        }
     });
 
     function updateWordCount() {
@@ -665,7 +680,41 @@
         url.searchParams.set('dark', isDarkMode);
         window.history.replaceState({}, '', url);
     }
+
+    // Add loading state
+    let isLoading = true;
+
+    // Add onMount handler
+    onMount(() => {
+        if (browser) {
+            // Simulate loading time and fade out
+            setTimeout(() => {
+                isLoading = false;
+            }, 2500); // Adjust timing as needed
+        }
+    });
 </script>
+
+<!-- Add the loading overlay at the very top of your template -->
+<svelte:head>
+    <link 
+        rel="preload" 
+        href="https://fonts.gstatic.com/s/quicksand/v30/6xK-dSZaM9iE8KbpRA_LJ3z8mH9BOJvgkP8o58a-wjwxUD2GF9Zc.woff2" 
+        as="font" 
+        type="font/woff2" 
+        crossorigin
+    />
+</svelte:head>
+
+{#if isLoading}
+    <div class="loading-overlay" class:fade-out={!isLoading}>
+        <div class="loading-content">
+            <div class="loading-text" style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                Pulpit!
+            </div>
+        </div>
+    </div>
+{/if}
 
 <svelte:window 
     on:click={handleClickOutside}
@@ -694,17 +743,8 @@
     </svg>
 </button>
 
-<!-- Replace the loading screen markup -->
-{#if isLoading}
-  <div class="loading-overlay" class:fade-out={!isLoading}>
-    <div class="loading-content">
-      <div class="loading-text">Pulpit!</div>
-    </div>
-  </div>
-{:else}
-  <!-- Existing app content -->
-  <div class="app" class:dark-mode={isDarkMode} style="background-image: {backgroundImage}; font-size: {fontSize}rem">
-    <div class="writing-container" class:dark-mode={isDarkMode} style:font-size="clamp(1.2rem, 1.4vw, 1.8rem)">
+<div class="app" class:dark-mode={isDarkMode} style="background-image: {backgroundImage}; font-size: {fontSize}rem">
+    <div class="writing-container" class:dark-mode={isDarkMode} style:font-size="{fontSize}rem">
         {#if isPreviewMode}
             <div 
                 class="markdown-preview"
@@ -733,96 +773,527 @@
             ></textarea>
         {/if}
     </div>
-  </div>
-{/if}
+</div>
 
-<div class="pulpit-segment">
-    <div class="logo">
-        <img src="/pulpit.jpeg" alt="Logo" />
+<!-- Replace floating buttons with vertical control bar -->
+<div class="control-bar" class:dark-mode={isDarkMode}>
+    <!-- Add home button at the top -->
+    <button 
+        class="control-btn"
+        on:click={() => window.location.href = '/'}
+        title="Back to Home"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </button>
+
+    <button 
+        class="control-btn"
+        on:click={toggleFileManager}
+        class:active={isFileManagerOpen}
+        title="File Manager"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+    </button>
+
+    <button 
+        class="control-btn"
+        class:dark-mode={isDarkMode}
+        on:click={toggleDarkMode}
+        title="Toggle Dark Mode"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            {#if isDarkMode}
+                <!-- Sun icon -->
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            {:else}
+                <!-- Moon icon -->
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            {/if}
+        </svg>
+    </button>
+
+    <button 
+        class="control-btn"
+        on:click={undo}
+        disabled={currentIndex === 0}
+        title="Undo"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7v6h6"></path>
+            <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"></path>
+        </svg>
+    </button>
+
+    <button 
+        class="control-btn"
+        on:click={redo}
+        disabled={currentIndex === history.length - 1}
+        title="Redo"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 7v6h-6"></path>
+            <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7"></path>
+        </svg>
+    </button>
+
+    <button 
+        class="control-btn settings-btn"
+        class:active={isControlsExpanded}
+        on:click={() => {
+            console.log('Before:', isControlsExpanded);
+            isControlsExpanded = !isControlsExpanded;
+            console.log('After:', isControlsExpanded);
+            isCircularMenuOpen = false;
+        }}
+        title="Settings"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+    </button>
+
+    <button 
+        class="control-btn"
+        on:click={quickComplete}
+        disabled={isGenerating}
+        title="Quick Complete"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+    </button>
+
+    <button 
+        class="control-btn"
+        on:click={togglePromptBar}
+        class:active={isPromptBarOpen}
+        title="Custom Instructions"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="21" y1="10" x2="3" y2="10"></line>
+            <line x1="21" y1="6" x2="3" y2="6"></line>
+            <line x1="21" y1="14" x2="3" y2="14"></line>
+            <line x1="21" y1="18" x2="3" y2="18"></line>
+        </svg>
+    </button>
+
+    <!-- Add new export button -->
+    <button 
+        class="control-btn"
+        on:click={exportToPDF}
+        title="Export as PDF"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+        </svg>
+    </button>
+
+    <!-- Add new fullscreen button -->
+    <button 
+        class="control-btn"
+        on:click={toggleFullscreen}
+        title="Toggle Fullscreen"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            {#if isFullscreen}
+                <!-- Minimize icon -->
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+            {:else}
+                <!-- Maximize icon -->
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+            {/if}
+        </svg>
+    </button>
+
+    <!-- Add new chat button to control bar -->
+    <button 
+        class="control-btn"
+        on:click={toggleChatPanel}
+        class:active={chatPanelOpen}
+        title="Chat"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+    </button>
+
+    <!-- Add preview toggle button to control bar (after the chat button) -->
+    <button 
+        class="control-btn"
+        on:click={() => isPreviewMode = !isPreviewMode}
+        class:active={isPreviewMode}
+        title={isPreviewMode ? "Edit Mode" : "Preview Mode"}
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            {#if isPreviewMode}
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            {:else}
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            {/if}
+        </svg>
+    </button>
+</div>
+
+<!-- Replace the settings-panel div with this new sidebar version -->
+<div class="settings-panel" class:open={isControlsExpanded} class:dark-mode={isDarkMode}>
+    <div class="settings-header">
+        <h3>Settings</h3>
+        <button class="close-btn" on:click={() => isControlsExpanded = false}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
     </div>
-    <div class="brand-name-container">
-        <div class="hero-loading-text">Pulpit</div>
+    <div class="settings-content">
+        <div class="settings-section">
+            <h4>Text Appearance</h4>
+            <div class="setting-item">
+                <label for="color-picker">Text Color</label>
+                <input 
+                    type="color" 
+                    id="color-picker" 
+                    bind:value={textColor}
+                    on:input={(e) => updateTextColor(e.target.value)}
+                />
+            </div>
+            <div class="setting-item">
+                <label for="font-size">Font Size</label>
+                <div class="font-size-controls">
+                    <button 
+                        class="size-btn"
+                        on:click={() => updateFontSize(Math.max(0.8, fontSize - 0.1))}
+                        disabled={fontSize <= 0.8}
+                        title="Decrease font size"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <span class="size-display">{fontSize.toFixed(1)}rem</span>
+                    <button 
+                        class="size-btn"
+                        on:click={() => updateFontSize(Math.min(2.5, fontSize + 0.1))}
+                        disabled={fontSize >= 2.5}
+                        title="Increase font size"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label for="font-select">Font Family</label>
+                <select 
+                    id="font-select" 
+                    bind:value={selectedFont} 
+                    on:change={() => loadFont(selectedFont)}
+                >
+                    {#each fonts as font}
+                        <option value={font.family}>{font.label}</option>
+                    {/each}
+                </select>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h4>Background</h4>
+            <div class="setting-item">
+                <label for="background-type">Image Type</label>
+                <select id="background-type" bind:value={imageType} on:change={loadBackgroundImage}>
+                    {#each imageTypes as type}
+                        <option value={type.value}>{type.label}</option>
+                    {/each}
+                </select>
+            </div>
+            <button class="refresh-btn" on:click={loadBackgroundImage}>
+                <span class="icon">↻</span>
+                <span>New Background</span>
+            </button>
+        </div>
     </div>
 </div>
 
-<!-- Example usage with circular menu -->
-{#if isCircularMenuOpen}
-    <div class="menu-container">
-        <SafeZone position={circularMenuPosition}>
-            <div class="circular-menu">
-                <!-- menu items -->
+<!-- Add prompt instructions sidebar -->
+<div class="prompt-bar" class:open={isPromptBarOpen} class:dark-mode={isDarkMode}>
+    <div class="prompt-bar-header">
+        <h3>Custom Instructions</h3>
+        <button class="close-btn" on:click={togglePromptBar}>×</button>
+    </div>
+    <textarea
+        bind:value={promptInstructions}
+        placeholder="Add instructions for the AI (e.g., 'Write in a professional tone' or 'Continue the story with a dramatic twist')"
+    ></textarea>
+    <button 
+        class="generate-btn"
+        on:click={generateWithInstructions}
+        disabled={isGenerating}
+    >
+        {isGenerating ? 'Generating...' : 'Generate with Instructions'}
+    </button>
+</div>
+
+<!-- Add chat panel -->
+<div class="chat-panel" class:open={chatPanelOpen} class:dark-mode={isDarkMode}>
+    <div class="chat-header">
+        <h3>Chat with AI</h3>
+        <button class="close-btn" on:click={toggleChatPanel}>×</button>
+    </div>
+    
+    <div class="chat-messages">
+        {#each chatHistory as message}
+            <div class="message {message.role}">
+                <div class="message-content">
+                    {#if message.formatted}
+                        {@html message.formatted}
+                    {:else}
+                        {message.content}
+                    {/if}
+                </div>
             </div>
-        </SafeZone>
+        {/each}
+    </div>
+    
+    <div class="chat-input">
+        <textarea
+            bind:value={chatMessage}
+            placeholder="Type your message..."
+            on:keydown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
+                }
+            }}
+        ></textarea>
+        <button 
+            class="send-btn"
+            on:click={sendChatMessage}
+            disabled={isChatGenerating}
+        >
+            {#if isChatGenerating}
+                <span class="loading">...</span>
+            {:else}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            {/if}
+        </button>
+    </div>
+</div>
+
+<!-- Update file manager sidebar -->
+<div class="file-manager" class:open={isFileManagerOpen} class:dark-mode={isDarkMode}>
+    <div class="file-manager-header">
+        <h3>Files</h3>
+        <div class="file-actions">
+            <button class="file-btn" on:click={createNewFile} title="New File">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+            <button class="file-btn" on:click={toggleFileManager} title="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div class="file-list">
+        {#each files as file}
+            <div class="file-item" class:active={currentFileName === file.name}>
+                <button 
+                    class="file-name"
+                    on:click={() => openFile(file.name)}
+                >
+                    {file.name}
+                </button>
+                <button 
+                    class="delete-btn"
+                    on:click={() => deleteFile(file.name)}
+                    title="Delete file"
+                >
+                    ×
+                </button>
+            </div>
+        {/each}
+    </div>
+</div>
+
+<!-- Add circular menu -->
+{#if isCircularMenuOpen}
+    <div 
+        class="circular-menu"
+        style="left: {circularMenuPosition.x}px; top: {circularMenuPosition.y}px;"
+    >
+        <div class="menu-items">
+            <button class="menu-item" on:click={() => toggleFileManager()} title="File Manager">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </button>
+            <button class="menu-item" on:click={() => toggleDarkMode()} title="Dark Mode">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    {#if isDarkMode}
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    {:else}
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    {/if}
+                </svg>
+            </button>
+            <button class="menu-item" on:click={() => undo()} title="Undo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7v6h6"></path>
+                    <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"></path>
+                </svg>
+            </button>
+            <button class="menu-item" on:click={() => redo()} title="Redo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 7v6h-6"></path>
+                    <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7"></path>
+                </svg>
+            </button>
+            <button 
+                class="menu-item" 
+                on:click|stopPropagation={() => {
+                    isControlsExpanded = !isControlsExpanded;
+                    isCircularMenuOpen = false;
+                }} 
+                title="Settings"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+            <button class="menu-item" on:click={() => toggleChatPanel()} title="Chat">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </button>
+            <button class="menu-item" on:click={() => toggleFullscreen()} title="Fullscreen">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    {#if isFullscreen}
+                        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                    {:else}
+                        <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                    {/if}
+                </svg>
+            </button>
+            <button class="menu-item" on:click={() => isPreviewMode = !isPreviewMode} title="Preview Mode">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    {#if isPreviewMode}
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                    {:else}
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    {/if}
+                </svg>
+            </button>
+            <!-- Generate text button in the middle -->
+            <button 
+                class="menu-item center-item" 
+                on:click={() => quickComplete()} 
+                disabled={isGenerating}
+                title="Generate Text"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+{/if}
+
+<!-- Add custom context menu -->
+{#if isContextMenuOpen}
+    <div 
+        class="context-menu"
+        style="left: {contextMenuPosition.x}px; top: {contextMenuPosition.y}px;"
+    >
+        <button 
+            class="context-menu-item"
+            on:click={() => handleContextMenuAction('copy')}
+            disabled={!selectedText}
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy
+            <span class="shortcut">⌘C</span>
+        </button>
+        <button 
+            class="context-menu-item"
+            on:click={() => handleContextMenuAction('cut')}
+            disabled={!selectedText}
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="6" r="3"></circle>
+                <circle cx="6" cy="18" r="3"></circle>
+                <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+                <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+                <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+            </svg>
+            Cut
+            <span class="shortcut">⌘X</span>
+        </button>
+        <button 
+            class="context-menu-item"
+            on:click={() => handleContextMenuAction('paste')}
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+            Paste
+            <span class="shortcut">⌘V</span>
+        </button>
+        <div class="context-menu-divider"></div>
+        <button 
+            class="context-menu-item"
+            on:click={() => handleContextMenuAction('selectAll')}
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3h18v18H3z"></path>
+            </svg>
+            Select All
+            <span class="shortcut">⌘A</span>
+        </button>
     </div>
 {/if}
 
 <style>
-    /* Replace the loading screen styles with these */
-    .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #000000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        opacity: 1;
-        transition: all 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
-    }
-
-    .loading-overlay.fade-out {
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .loading-content {
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .loading-text {
-        font-family: 'Playfair Display', 'Cormorant Garamond', serif;
-        font-size: 5rem;
-        color: white;
-        font-weight: 400;
-        font-style: italic;
-        opacity: 0;
-        transform: translateY(20px) rotate(-5deg);
-        animation: textAnimation 2s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
-        text-shadow: 
-          0 0 20px rgba(255,255,255,0.4),
-          0 0 40px rgba(255,255,255,0.2),
-          0 0 60px rgba(255,255,255,0.1);
-    }
-
-    @keyframes textAnimation {
-        0% {
-            opacity: 0;
-            transform: translateY(30px) rotate(-8deg) scale(0.95);
-            filter: blur(8px);
-        }
-        25% {
-            opacity: 1;
-            transform: translateY(0) rotate(-5deg) scale(1);
-            filter: blur(0);
-        }
-        85% {
-            opacity: 1;
-            transform: translateY(0) rotate(-5deg) scale(1);
-            filter: blur(0);
-        }
-        100% {
-            opacity: 0;
-            transform: translateY(-20px) rotate(-3deg) scale(1.05);
-            filter: blur(12px);
-        }
-    }
-
     /* Global dark mode styles */
     :global(body) {
         transition: background-color 0.3s ease, color 0.3s ease;
@@ -1047,28 +1518,26 @@
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
         backdrop-filter: blur(14px);
         width: 70%;
-        height: 90vh; /* Reduced from 100vh to prevent overlap */
+        height: 100vh;
         box-sizing: border-box;
-        margin: 2rem auto; /* Added vertical margin */
-        padding: 6rem; /* Increased padding */
+        margin: 0 auto;
+        padding: 2rem;
     }
 
     textarea {
         flex: 1;
         width: 100%;
         min-height: 0;
-        padding: 3rem; /* Increased padding */
-        margin: 1rem 0; /* Added vertical margin */
+        padding: 0;
         border: none;
         resize: none;
-        line-height: 2; /* Increased line height */
+        line-height: 1.8;
         font-family: inherit;
         background-color: transparent;
         color: #1a202c;
         border-radius: 0;
         overflow-y: auto;
         box-sizing: border-box;
-        font-size: clamp(1rem, 1.2vw, 1.4rem); /* Responsive font size with bounds */
     }
 
     textarea:focus {
@@ -1111,7 +1580,7 @@
     .control-bar {
         position: fixed;
         top: 50%;
-        left: 2%;
+        left: 1rem;
         transform: translateY(-50%);
         display: flex;
         flex-direction: column;
@@ -1120,8 +1589,8 @@
     }
 
     .control-btn {
-        width: 4vmin;
-        height: 4vmin;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         border: none;
         background-color: rgba(255, 255, 255, 0.95);
@@ -1155,34 +1624,34 @@
 
     @media (max-width: 768px) {
         .control-bar {
-            left: 1%;
+            left: 0.5rem;
         }
     }
 
     .floating-buttons {
         position: fixed;
-        bottom: 4%;
-        right: 4%;
+        bottom: 2rem;
+        right: 2rem;
         display: flex;
-        gap: 2%;
+        gap: 1rem;
         z-index: 1000;
     }
 
     .prompt-bar {
         position: fixed;
         top: 0;
-        right: -30%;
-        width: 30%;
+        right: -400px;
+        width: 400px;
         height: 100vh;
         background-color: rgba(255, 255, 255, 0.95);
         box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
         transition: right 0.3s ease;
         z-index: 1001;
-        padding: 2%;
+        padding: 1.5rem;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        gap: 2%;
+        gap: 1rem;
     }
 
     .prompt-bar.open {
@@ -1238,8 +1707,8 @@
         }
 
         .floating-buttons {
-            bottom: 2%;
-            right: 2%;
+            bottom: 1rem;
+            right: 1rem;
         }
     }
 
@@ -1248,8 +1717,6 @@
         flex-direction: column;
         gap: 0.5rem;
         margin-bottom: 1rem;
-        --min-font-size: 0.8rem;
-        --max-font-size: 2rem;
     }
 
     .font-size-container label {
@@ -1289,8 +1756,8 @@
     .settings-panel {
         position: fixed;
         top: 0;
-        right: -30%;
-        width: 30%;
+        right: -400px;
+        width: 400px;
         height: 100vh;
         background-color: var(--bg-secondary);
         box-shadow: -2px 0 8px var(--panel-shadow);
@@ -1309,7 +1776,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 2%;
+        padding: 1.5rem;
         border-bottom: 1px solid #e2e8f0;
     }
 
@@ -1320,26 +1787,26 @@
 
     .settings-content {
         flex: 1;
-        padding: 2%;
+        padding: 1.5rem;
         overflow-y: auto;
     }
 
     .settings-section {
-        margin-bottom: 4%;
+        margin-bottom: 2rem;
     }
 
     .settings-section h4 {
-        margin: 0 0 2% 0;
+        margin: 0 0 1rem 0;
         color: #4a5568;
     }
 
     .setting-item {
-        margin-bottom: 2%;
+        margin-bottom: 1rem;
     }
 
     .setting-item label {
         display: block;
-        margin-bottom: 1%;
+        margin-bottom: 0.5rem;
         color: #4a5568;
         font-size: 0.9em;
     }
@@ -1347,7 +1814,7 @@
     .setting-item select,
     .setting-item input[type="color"] {
         width: 100%;
-        padding: 1%;
+        padding: 0.5rem;
         border: 1px solid #e2e8f0;
         border-radius: 4px;
         background-color: white;
@@ -1382,8 +1849,8 @@
     .chat-panel {
         position: fixed;
         top: 0;
-        right: -30%;
-        width: 30%;
+        right: -400px;
+        width: 400px;
         height: 100vh;
         background-color: rgba(255, 255, 255, 0.95);
         box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
@@ -1398,7 +1865,7 @@
     }
 
     .chat-header {
-        padding: 2%;
+        padding: 1rem;
         border-bottom: 1px solid #e2e8f0;
         display: flex;
         justify-content: space-between;
@@ -1408,15 +1875,15 @@
     .chat-messages {
         flex: 1;
         overflow-y: auto;
-        padding: 2%;
+        padding: 1rem;
         display: flex;
         flex-direction: column;
-        gap: 2%;
+        gap: 1rem;
     }
 
     .message {
         max-width: 80%;
-        padding: 2%;
+        padding: 0.75rem;
         border-radius: 1rem;
         word-wrap: break-word;
     }
@@ -1442,10 +1909,10 @@
     }
 
     .chat-input {
-        padding: 2%;
+        padding: 1rem;
         border-top: 1px solid #e2e8f0;
         display: flex;
-        gap: 1%;
+        gap: 0.5rem;
     }
 
     .chat-input textarea {
@@ -1460,8 +1927,8 @@
     }
 
     .send-btn {
-        width: 4vmin;
-        height: 4vmin;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         border: none;
         background-color: #4a5568;
@@ -1537,8 +2004,8 @@
     .file-manager {
         position: fixed;
         top: 0;
-        right: -25%;
-        width: 25%;
+        right: -300px;
+        width: 300px;
         height: 100vh;
         background-color: rgba(255, 255, 255, 0.95);
         box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
@@ -1561,7 +2028,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 2%;
+        padding: 1rem;
         border-bottom: 1px solid var(--border-color);
     }
 
@@ -1572,7 +2039,7 @@
 
     .file-actions {
         display: flex;
-        gap: 1%;
+        gap: 0.5rem;
     }
 
     .file-btn {
@@ -1580,7 +2047,7 @@
         border: none;
         color: var(--text-secondary);
         cursor: pointer;
-        padding: 1%;
+        padding: 0.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1594,16 +2061,16 @@
     .file-list {
         flex: 1;
         overflow-y: auto;
-        padding: 2%;
+        padding: 1rem;
     }
 
     .file-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1%;
+        padding: 0.5rem;
         border-radius: 4px;
-        margin-bottom: 1%;
+        margin-bottom: 0.5rem;
         background-color: var(--bg-primary);
         transition: background-color 0.2s;
     }
@@ -1650,16 +2117,14 @@
     .markdown-preview {
         flex: 1;
         width: 100%;
-        padding: 3rem; /* Increased padding */
-        margin: 1rem 0; /* Added vertical margin */
-        line-height: 2; /* Increased line height */
+        padding: 0;
+        line-height: 1.8;
         font-family: inherit;
         background-color: transparent;
         border-radius: 0;
         overflow-y: auto;
         box-sizing: border-box;
         cursor: pointer;
-        font-size: clamp(1rem, 1.2vw, 1.4rem); /* Responsive font size with bounds */
     }
 
     /* Style markdown elements */
@@ -1764,19 +2229,19 @@
     .circular-menu {
         position: fixed;
         z-index: 1100;
-        transform: translate(-8vmin, -8vmin);
+        transform: translate(-80px, -80px); /* Adjusted to move menu down-right from cursor */
     }
 
     .menu-items {
         position: relative;
-        width: 20vmin;
-        height: 20vmin;
+        width: 200px;
+        height: 200px;
     }
 
     .menu-item {
         position: absolute;
-        width: 4vmin;
-        height: 4vmin;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         background-color: var(--bg-secondary);
         color: var(--text-secondary);
@@ -1790,15 +2255,15 @@
     }
 
     /* Base positions - these should remain unchanged on hover */
-    .menu-item:nth-child(1) { transform: translate(8vmin, -4vmin); }    /* Top */
-    .menu-item:nth-child(2) { transform: translate(12vmin, 0); }     /* Top-right */
-    .menu-item:nth-child(3) { transform: translate(12vmin, 8vmin); }    /* Right */
-    .menu-item:nth-child(4) { transform: translate(8vmin, 12vmin); }    /* Bottom-right */
-    .menu-item:nth-child(5) { transform: translate(0, 12vmin); }     /* Bottom */
-    .menu-item:nth-child(6) { transform: translate(-4vmin, 8vmin); }    /* Bottom-left */
-    .menu-item:nth-child(7) { transform: translate(-4vmin, 0); }     /* Left */
-    .menu-item:nth-child(8) { transform: translate(0, -4vmin); }     /* Top-left */
-    .menu-item.center-item { transform: translate(4vmin, 4vmin); }      /* Center */
+    .menu-item:nth-child(1) { transform: translate(80px, -40px); }    /* Top */
+    .menu-item:nth-child(2) { transform: translate(120px, 0px); }     /* Top-right */
+    .menu-item:nth-child(3) { transform: translate(120px, 80px); }    /* Right */
+    .menu-item:nth-child(4) { transform: translate(80px, 120px); }    /* Bottom-right */
+    .menu-item:nth-child(5) { transform: translate(0px, 120px); }     /* Bottom */
+    .menu-item:nth-child(6) { transform: translate(-40px, 80px); }    /* Bottom-left */
+    .menu-item:nth-child(7) { transform: translate(-40px, 0px); }     /* Left */
+    .menu-item:nth-child(8) { transform: translate(0px, -40px); }     /* Top-left */
+    .menu-item.center-item { transform: translate(40px, 40px); }      /* Center */
 
     /* Hover effects - only change colors and shadow */
     .menu-item:hover:not(:disabled) {
@@ -1858,10 +2323,10 @@
 
     .floating-menu-btn {
         position: fixed;
-        bottom: 4%;
-        right: 4%;
-        width: 4vmin;
-        height: 4vmin;
+        bottom: 2rem;
+        right: 2rem;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         background-color: var(--bg-secondary);
         color: var(--text-secondary);
@@ -1890,7 +2355,7 @@
 
     .context-menu {
         position: fixed;
-        min-width: 15%;
+        min-width: 200px;
         background-color: var(--bg-secondary);
         border-radius: 8px;
         box-shadow: 0 2px 12px var(--panel-shadow);
@@ -1950,45 +2415,190 @@
     /* Ensure context menu doesn't go off screen */
     @media (max-width: 768px) {
         .context-menu {
-            min-width: 40%;
+            min-width: 160px;
         }
     }
 
-    .hero-loading-text {
-        font-family: 'Playfair Display', 'Cormorant Garamond', serif;
+    /* Add these new styles */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #000000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 1;
+        transition: all 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+
+    .loading-overlay.fade-out {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .loading-content {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .loading-text {
+        font-family: 'Quicksand', sans-serif;
         font-size: 5rem;
         color: white;
         font-weight: 400;
         font-style: italic;
+        opacity: 0;
+        transform: translateY(1.25rem) rotate(-5deg);
+        animation: textAnimation 2s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
         text-shadow: 
-          0 0 20px rgba(255,255,255,0.4),
-          0 0 40px rgba(255,255,255,0.2),
-          0 0 60px rgba(255,255,255,0.1);
+            0 0 20px rgba(255,255,255,0.4),
+            0 0 40px rgba(255,255,255,0.2),
+            0 0 60px rgba(255,255,255,0.1);
     }
 
-    .menu-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 1100;
+    @keyframes textAnimation {
+        0% {
+            opacity: 0;
+            transform: translateY(1.875rem) rotate(-8deg) scale(0.95);
+            filter: blur(0.5rem);
+        }
+        25% {
+            opacity: 1;
+            transform: translateY(0) rotate(-5deg) scale(1);
+            filter: blur(0);
+        }
+        85% {
+            opacity: 1;
+            transform: translateY(0) rotate(-5deg) scale(1);
+            filter: blur(0);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-1.25rem) rotate(-3deg) scale(1.05);
+            filter: blur(0.75rem);
+        }
     }
 
-    /* Add responsive padding for mobile */
     @media (max-width: 768px) {
-        .writing-container {
-            width: 90%;
-            height: 85vh;
-            padding: 3rem;
-            margin: 1rem auto;
+        .loading-text {
+            font-size: 3rem;
         }
+    }
 
-        textarea,
-        .markdown-preview {
-            padding: 1.5rem;
-            font-size: clamp(0.9rem, 1.1vw, 1.2rem);
+    /* Add font loading transition styles */
+    .writing-container {
+        animation: fontLoadTransition 0.5s ease-out forwards;
+    }
+
+    @keyframes fontLoadTransition {
+        0% {
+            filter: blur(3px);
+            text-shadow: 
+                0 0 10px rgba(255, 255, 255, 0.5),
+                0 0 20px rgba(255, 255, 255, 0.3),
+                0 0 30px rgba(255, 255, 255, 0.2);
+            opacity: 0.7;
         }
+        100% {
+            filter: blur(0);
+            text-shadow: none;
+            opacity: 1;
+        }
+    }
+
+    /* Update textarea styles to work with the animation */
+    textarea {
+        /* ... existing textarea styles ... */
+        will-change: filter, opacity;
+        backface-visibility: hidden;
+    }
+
+    /* Add dark mode specific glow */
+    :global(body.dark-mode) .writing-container {
+        animation: fontLoadTransitionDark 0.5s ease-out forwards;
+    }
+
+    @keyframes fontLoadTransitionDark {
+        0% {
+            filter: blur(3px);
+            text-shadow: 
+                0 0 10px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(0, 0, 0, 0.3),
+                0 0 30px rgba(0, 0, 0, 0.2);
+            opacity: 0.7;
+        }
+        100% {
+            filter: blur(0);
+            text-shadow: none;
+            opacity: 1;
+        }
+    }
+
+    /* Add stronger initial blur/glow effect */
+    .writing-container {
+        animation: fontLoadTransition 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes fontLoadTransition {
+        0% {
+            filter: blur(8px) brightness(1.2);
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.8),
+                0 0 40px rgba(255, 255, 255, 0.6),
+                0 0 60px rgba(255, 255, 255, 0.4);
+            opacity: 0.3;
+        }
+        50% {
+            filter: blur(4px) brightness(1.1);
+            opacity: 0.6;
+        }
+        100% {
+            filter: blur(0) brightness(1);
+            text-shadow: none;
+            opacity: 1;
+        }
+    }
+
+    /* Dark mode version */
+    :global(body.dark-mode) .writing-container {
+        animation: fontLoadTransitionDark 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes fontLoadTransitionDark {
+        0% {
+            filter: blur(8px) brightness(0.8);
+            text-shadow: 
+                0 0 20px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(0, 0, 0, 0.6),
+                0 0 60px rgba(0, 0, 0, 0.4);
+            opacity: 0.3;
+        }
+        50% {
+            filter: blur(4px) brightness(0.9);
+            opacity: 0.6;
+        }
+        100% {
+            filter: blur(0) brightness(1);
+            text-shadow: none;
+            opacity: 1;
+        }
+    }
+
+    /* Add styles for home button */
+    .home-btn {
+        width: 52px !important;  /* Make it slightly bigger */
+        height: 52px !important;
+        margin-bottom: 1rem !important;  /* Add some space before other controls */
+    }
+
+    .home-btn svg {
+        width: 28px;  /* Larger icon */
+        height: 28px;
     }
 </style>

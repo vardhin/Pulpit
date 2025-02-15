@@ -173,7 +173,7 @@
         padding: 0;
         width: 100%;
         height: 100%;
-        overflow: hidden;
+        overflow: visible;
     }
 
     main {
@@ -190,6 +190,12 @@
         overflow-y: auto;
         overflow-x: hidden;
         scroll-behavior: smooth;
+        scroll-snap-type: y mandatory;
+    }
+
+    .hero-section, .cards-section {
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
     }
 
     /* Subtle paper texture */
@@ -419,11 +425,11 @@
     }
 
     .nav-content {
-        max-width: 90%;
-        margin: 0 auto;
-        padding: 0.5rem 2%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0.5rem 4rem;
         display: flex;
-        justify-content: flex-end;
+        justify-content: flex-start;
         align-items: center;
     }
 
