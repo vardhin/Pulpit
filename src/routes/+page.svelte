@@ -8,16 +8,14 @@
   let backgroundImage = '';
   let isLoading = true;
 
-  // Collection of nature images for hero section
+  // Collection of tundra like images with crystal clear lakes and riversfor hero section
   const natureImages = [
+    'https://images.pexels.com/photos/147411/italy-mountains-dawn-daybreak-147411.jpeg',  // Misty mountain lake
+    'https://images.pexels.com/photos/1586298/pexels-photo-1586298.jpeg',  // Autumn forest
+    'https://images.pexels.com/photos/235621/pexels-photo-235621.jpeg',    // Foggy pine forest
     'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg', // Misty forest
-    'https://images.pexels.com/photos/1363876/pexels-photo-1363876.jpeg', // Mountain lake
-    'https://images.pexels.com/photos/1671325/pexels-photo-1671325.jpeg', // Sunset forest
-    'https://images.pexels.com/photos/1292115/pexels-photo-1292115.jpeg', // Waterfall
-    'https://images.pexels.com/photos/2088210/pexels-photo-2088210.jpeg', // Mountain peaks
-    'https://images.pexels.com/photos/1586298/pexels-photo-1586298.jpeg', // Autumn forest
-    'https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg', // Green valley
-    'https://images.pexels.com/photos/1559117/pexels-photo-1559117.jpeg'  // Forest river
+    'https://images.pexels.com/photos/1559117/pexels-photo-1559117.jpeg', // Forest river
+    'https://images.pexels.com/photos/1266810/pexels-photo-1266810.jpeg',  // Serene lake sunset
   ];
 
   function loadBackgroundImage() {
@@ -38,6 +36,12 @@
     setTimeout(() => {
       isLoading = false;
     }, 500);
+
+    // Add Google Fonts link dynamically
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
   });
 
   function scrollToSection(sectionId) {
@@ -230,13 +234,13 @@
     }
 
     .pulpit-segment {
-        background-color: rgba(2, 103, 193, 0.85);
-        backdrop-filter: blur(30px) saturate(180%);
-        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        background-color: rgba(2, 83, 153, 0.95);
+        backdrop-filter: blur(15px) saturate(150%);
+        -webkit-backdrop-filter: blur(15px) saturate(150%);
         box-shadow: 
             4px 0 8px rgba(25, 29, 50, 0.15),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-        border-right: 1px solid rgba(255, 255, 255, 0.3);
+            inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
         height: 85%;
         width: 100%;
         display: flex;
@@ -264,35 +268,34 @@
                 0deg,
                 transparent,
                 transparent 24px,
-                #CCC5B9 24px, /* Cement color */
-                #CCC5B9 25px
+                rgba(0, 20, 40, 0.2) 24px, /* Changed to dark blue with opacity */
+                rgba(0, 20, 40, 0.2) 25px
             ),
             /* Noise texture */
             url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         background-size: 100% 25px, 150px 150px;
-        opacity: 0.1;
+        opacity: 0.5;
         z-index: 0;
-        mix-blend-mode: overlay;
+        mix-blend-mode: multiply; /* Changed blend mode to work better with dark lines */
     }
 
     /* Dark mode update for the paper texture */
     :global(body.dark-mode) .pulpit-segment {
-        background-color: rgba(2, 76, 145, 0.85);
+        background-color: rgba(1, 48, 91, 0.95);
     }
 
     :global(body.dark-mode) .pulpit-segment::before {
         background-image: 
-            /* Notebook ruling */
             repeating-linear-gradient(
                 0deg,
                 transparent,
                 transparent 24px,
-                #808080 24px, /* Gray color */
-                #808080 25px
+                rgba(255, 255, 255, 0.5) 24px,
+                rgba(255, 255, 255, 0.5) 25px
             ),
-            /* Noise texture */
             url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        opacity: 0.15;
+        opacity: 0.4;
+        mix-blend-mode: soft-light; /* Keeping original blend mode for dark mode */
     }
 
     /* Ensure pulpit-segment content stays above the pattern */
@@ -408,11 +411,11 @@
         left: 0;
         right: 0;
         z-index: 1000;
-        background-color: rgba(255, 255, 255, 0.85);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+        background-color: rgba(25, 29, 50, 0.95); /* Darker, more neutral color */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
     }
 
     .nav-content {
@@ -428,20 +431,21 @@
         display: flex;
         gap: 0.5rem;
         padding: 0.25rem;
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 0.625rem;
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     }
 
     .nav-links button,
     .nav-links a.nav-button {
         background: none;
         border: none;
-        color: #191D32;
-        font-family: 'Times New Roman', serif;
+        color: rgba(255, 255, 255, 0.9);
+        font-family: 'Quicksand', sans-serif; /* Updated font */
+        font-weight: 500; /* Added weight for Quicksand */
         font-size: 0.95rem;
         cursor: pointer;
         padding: 0.35rem 0.75rem;
@@ -455,52 +459,39 @@
 
     .nav-links button:hover,
     .nav-links a.nav-button:hover {
-        color: #0267C1;
-        background: rgba(2, 103, 193, 0.1);
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.15);
     }
 
     .dark-mode-toggle {
-        background: none;
-        border: none;
-        color: #191D32;
-        cursor: pointer;
-        padding: 0.5rem 1rem !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        border-radius: 0.5rem;
+        color: rgba(255, 255, 255, 0.9) !important;
     }
 
     .dark-mode-toggle:hover {
-        color: #0267C1;
-        background: rgba(2, 103, 193, 0.1);
-    }
-
-    .dark-mode-toggle.dark-mode {
-        color: #EEEEEE;
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.15) !important;
     }
 
     /* Update dark mode styles for the navigation */
     :global(body.dark-mode) nav {
-        background-color: rgba(26, 32, 44, 0.85);
+        background-color: rgba(20, 24, 42, 0.95); /* Darker, more neutral color for dark mode */
         border-bottom-color: rgba(255, 255, 255, 0.1);
     }
 
     :global(body.dark-mode) .nav-links {
-        background: rgba(0, 0, 0, 0.3);
+        background: rgba(255, 255, 255, 0.05);
         border-color: rgba(255, 255, 255, 0.1);
     }
 
     :global(body.dark-mode) .nav-links button,
     :global(body.dark-mode) .nav-links a.nav-button {
-        color: #EEEEEE;
+        color: rgba(255, 255, 255, 0.9);
     }
 
     :global(body.dark-mode) .nav-links button:hover,
     :global(body.dark-mode) .nav-links a.nav-button:hover {
-        color: #0267C1;
-        background: rgba(2, 103, 193, 0.2);
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.1);
     }
 
     /* Add CSS variables for consistent theming */
@@ -509,7 +500,7 @@
         --text-primary: #191D32;
         --panel-shadow: rgba(0, 0, 0, 0.15);
         --border-color: rgba(25, 29, 50, 0.35);
-        --hero-left-bg: #0267C1;
+        --hero-left-bg: #025399;
     }
 
     :global(body.dark-mode) {
@@ -517,7 +508,7 @@
         --text-primary: #EEEEEE;
         --panel-shadow: rgba(0, 0, 0, 0.3);
         --border-color: rgba(255, 255, 255, 0.1);
-        --hero-left-bg: #024C91;
+        --hero-left-bg: #01305B;
     }
 
     /* Fix dark mode toggle button */
@@ -555,7 +546,7 @@
     }
 
     .loading-text {
-        font-family: 'Playfair Display', 'Cormorant Garamond', serif;
+        font-family: 'Quicksand', sans-serif;
         font-size: 5rem;
         color: white;
         font-weight: 400;
@@ -593,10 +584,10 @@
     }
 
     .loading-text-unanimated {
-        font-family: 'Playfair Display', 'Cormorant Garamond', serif;
+        font-family: 'Quicksand', sans-serif;
         font-size: 3rem;
-        color: white;
-        font-weight: 400;
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 500;
         font-style: italic;
         text-shadow: 
             0 0 20px rgba(255,255,255,0.4),

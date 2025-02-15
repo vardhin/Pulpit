@@ -8,8 +8,8 @@
     let quotePositions = []; // Array to track all quote positions
     let quoteInterval;
     let mounted = false;
-    let MIN_SIZE = 0.8;  // Default values
-    let MAX_SIZE = 1.4;
+    let MIN_SIZE = 0.9;  // Default values
+    let MAX_SIZE = 1.1;
 
     // Maximum number of concurrent quotes
     const MAX_QUOTES = 3;
