@@ -35,6 +35,19 @@
     }
   ];
 
+  // Add these image collections at the top of your script
+  const imageCollections = {
+    scenery: [
+      'https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg',
+      'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg',
+      'https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg',
+      'https://images.pexels.com/photos/552789/pexels-photo-552789.jpeg',
+      'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg'
+    ]
+  };
+
+  let backgroundImage = '';
+
   function toggleDarkMode() {
     isDarkMode = !isDarkMode;
     localStorage.setItem('darkMode', isDarkMode);
@@ -57,87 +70,93 @@
     setTimeout(() => {
       isLoading = false;
     }, 500);
+
+    // Load random background image
+    const collection = imageCollections.scenery;
+    const randomIndex = Math.floor(Math.random() * collection.length);
+    backgroundImage = `url('${collection[randomIndex]}')`;
   });
 </script>
 
 <Loadingscreen {isLoading} />
 <Navbar {isDarkMode} {toggleDarkMode} />
 
-<main>
-  <div class="forum-container">
-    <header class="forum-header">
-      <h1>Pulpit Forum</h1>
-      <p>Join the conversation with fellow writers</p>
-    </header>
+<div class="page-background" style="background-image: {backgroundImage}">
+  <main>
+    <div class="forum-container">
+      <div class="forum-content">
+        <header class="forum-header">
+          <h1>Pulpit Forum</h1>
+          <p>Join the conversation with fellow writers</p>
+        </header>
 
-    <section class="categories">
-      {#each forumCategories as category}
-        <div class="category-card">
-          <div class="category-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              {@html category.icon}
-            </svg>
-          </div>
-          <div class="category-content">
-            <h2>{category.title}</h2>
-            <p>{category.description}</p>
-            <div class="category-stats">
-              <span>{category.topics} Topics</span>
-              <span>{category.posts} Posts</span>
+        <div class="forum-messages">
+          <!-- Add your forum messages here -->
+          <div class="message">
+            <div class="message-avatar">JD</div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="message-author">John Doe</span>
+                <span class="message-date">2 hours ago</span>
+              </div>
+              <p>Sample forum message...</p>
             </div>
           </div>
-          <div class="category-arrow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </div>
         </div>
-      {/each}
-    </section>
-  </div>
-</main>
+      </div>
+
+      <div class="forum-footer">
+        {#each forumCategories as category}
+          <button class="category-button">
+            <div class="category-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                {@html category.icon}
+              </svg>
+            </div>
+            <span>{category.title}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+  </main>
+</div>
 
 <style>
-  /* Reuse font declarations from landing page */
-  main {
-    min-height: 100vh;
-    background-color: rgba(2, 83, 153, 0.95);
-    backdrop-filter: blur(15px) saturate(150%);
-    -webkit-backdrop-filter: blur(15px) saturate(150%);
-    position: relative;
-    overflow: hidden;
-    padding: 2rem;
-    padding-top: 5rem;
-  }
-
-  /* Paper texture and ruling for main */
-  main::before {
-    content: '';
-    position: absolute;
+  .page-background {
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 24px,
-        rgba(0, 20, 40, 0.2) 24px,
-        rgba(0, 20, 40, 0.2) 25px
-      ),
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    background-size: 100% 25px, 150px 150px;
-    opacity: 0.5;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     z-index: 0;
-    mix-blend-mode: multiply;
+  }
+
+  main {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    z-index: 2;
   }
 
   .forum-container {
-    position: relative;
-    z-index: 1;
-    max-width: 1200px;
+    width: 80%;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     margin: 0 auto;
+    overflow-y: auto;
+    padding-top: 64px;
   }
 
   .forum-header {
@@ -160,33 +179,85 @@
     margin: 0;
   }
 
-  .categories {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
+  .forum-panel {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .forum-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 12px -1px rgba(0, 0, 0, 0.15),
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(255, 255, 255, 0.2);
+  }
+
+  .forum-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .forum-messages {
     padding: 1rem;
   }
 
-  .category-card {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 1rem;
-    padding: 1.5rem;
+  .forum-message {
     display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.1),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   }
 
-  .category-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 
-      0 12px 48px rgba(0, 0, 0, 0.15),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  .message-avatar {
+    width: 40px;
+    height: 40px;
+    background: #4a5568;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+  }
+
+  .message-content {
+    flex: 1;
+  }
+
+  .message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  .message-author {
+    font-weight: 500;
+    color: #2d3748;
+  }
+
+  .message-date {
+    color: #718096;
+    font-size: 0.9em;
+  }
+
+  .forum-panel-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
   }
 
   .category-icon {
@@ -246,54 +317,36 @@
     transform: translateX(0);
   }
 
-  /* Dark mode styles */
+  /* Dark mode adjustments */
+  :global(body.dark-mode) .page-background::before {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
   :global(body.dark-mode) main {
-    background-color: rgba(1, 48, 91, 0.95);
+    background: rgba(0, 0, 0, 0.2);
   }
 
-  :global(body.dark-mode) main::before {
-    background-image: 
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 24px,
-        rgba(255, 255, 255, 0.5) 24px,
-        rgba(255, 255, 255, 0.5) 25px
-      ),
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.4;
-    mix-blend-mode: soft-light;
+  :global(body.dark-mode) .forum-panel {
+    background: rgba(26, 32, 44, 0.8);
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.2),
+      0 2px 4px -1px rgba(0, 0, 0, 0.15),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
   }
 
-  :global(body.dark-mode) .category-card {
-    background: rgba(26, 32, 44, 0.95);
-    border-color: rgba(255, 255, 255, 0.1);
+  :global(body.dark-mode) .forum-panel:hover {
+    box-shadow: 
+      0 8px 12px -1px rgba(0, 0, 0, 0.25),
+      0 4px 6px -1px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
   }
 
-  :global(body.dark-mode) .category-content h2 {
-    color: #E2E8F0;
+  :global(body.dark-mode) .message-author {
+    color: #e2e8f0;
   }
 
-  :global(body.dark-mode) .category-content p {
-    color: #A0AEC0;
-  }
-
-  :global(body.dark-mode) .category-stats {
-    color: #718096;
-  }
-
-  :global(body.dark-mode) .category-icon {
-    background: rgba(255, 255, 255, 0.1);
-    color: #E2E8F0;
-  }
-
-  :global(body.dark-mode) .category-card:hover .category-icon {
-    background: #E2E8F0;
-    color: #1A202C;
-  }
-
-  :global(body.dark-mode) .category-arrow {
-    color: #90CDF4;
+  :global(body.dark-mode) .message-date {
+    color: #a0aec0;
   }
 
   /* Responsive styles */
@@ -306,8 +359,92 @@
       font-size: 1rem;
     }
 
-    .categories {
-      grid-template-columns: 1fr;
+    .forum-panel {
+      flex-direction: column;
     }
+
+    .forum-panel-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .forum-panel-header h2 {
+      margin-top: 0.5rem;
+    }
+
+    .forum-messages {
+      padding: 0.5rem;
+    }
+
+    .forum-message {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .message-avatar {
+      margin-right: 0;
+    }
+
+    .message-content {
+      margin-top: 0.5rem;
+    }
+
+    .forum-panel-footer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .category-stats {
+      margin-top: 0.5rem;
+    }
+  }
+
+  .forum-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  .forum-footer {
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .category-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.5rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .category-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+  }
+
+  /* Dark mode adjustments */
+  :global(body.dark-mode) .forum-container {
+    background: rgba(0, 0, 0, 0.25);
+  }
+
+  :global(body.dark-mode) .category-button {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  :global(body.dark-mode) .category-button:hover {
+    background: rgba(0, 0, 0, 0.3);
   }
 </style>
