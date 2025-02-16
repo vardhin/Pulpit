@@ -23,6 +23,23 @@
     backgroundImage = `url('${natureImages[randomIndex]}')`;
   }
 
+  let currentSection = 'hero';
+  const sections = ['hero', 'cards'];
+
+  function navigateSection(direction) {
+    const currentIndex = sections.indexOf(currentSection);
+    let nextIndex;
+    
+    if (direction === 'up') {
+      nextIndex = Math.max(0, currentIndex - 1);
+    } else {
+      nextIndex = Math.min(sections.length - 1, currentIndex + 1);
+    }
+    
+    currentSection = sections[nextIndex];
+    scrollToSection(currentSection);
+  }
+
   onMount(() => {
     // Load dark mode preference from localStorage
     const storedDarkMode = localStorage.getItem('darkMode');
@@ -42,6 +59,34 @@
     link.href = 'https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
+
+    const handleWheel = (e) => {
+      e.preventDefault();
+      if (e.deltaY > 0) {
+        navigateSection('down');
+      } else {
+        navigateSection('up');
+      }
+    };
+
+    const handleKeydown = (e) => {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        navigateSection('up');
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        navigateSection('down');
+      }
+    };
+
+    // Add event listeners
+    document.addEventListener('wheel', handleWheel, { passive: false });
+    document.addEventListener('keydown', handleKeydown);
+
+    return () => {
+      document.removeEventListener('wheel', handleWheel);
+      document.removeEventListener('keydown', handleKeydown);
+    };
   });
 
   function scrollToSection(sectionId) {
@@ -86,7 +131,7 @@
           <rect x="14" y="14" width="7" height="7"></rect>
           <rect x="3" y="14" width="7" height="7"></rect>
         </svg>
-        <span>Cards</span>
+        <span>Lits</span>
       </button>
       <button 
         class="dark-mode-toggle"
@@ -149,7 +194,6 @@
     </section>
     
     <section id="cards" class="cards-section">
-        <!-- Add your cards here -->
         <div class="cards-container">
             <div class="card">
                 <h3>Card Title</h3>
@@ -165,6 +209,29 @@
             </div>
         </div>
     </section>
+
+    <div class="navigation-arrows">
+      <button 
+        class="nav-arrow up"
+        on:click={() => navigateSection('up')}
+        style="opacity: {currentSection === 'hero' ? '0.5' : '1'}"
+        disabled={currentSection === 'hero'}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      </button>
+      <button 
+        class="nav-arrow down"
+        on:click={() => navigateSection('down')}
+        style="opacity: {currentSection === 'cards' ? '0.5' : '1'}"
+        disabled={currentSection === 'cards'}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+    </div>
 </main>
 
 <style>
@@ -174,6 +241,12 @@
         width: 100%;
         height: 100%;
         overflow: visible;
+        scrollbar-width: none;  /* Firefox */
+        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    }
+
+    :global(body::-webkit-scrollbar), :global(html::-webkit-scrollbar) {
+        display: none;  /* WebKit */
     }
 
     main {
@@ -187,10 +260,16 @@
         background-image: 
             linear-gradient(rgba(25, 29, 50, 0.05) 1px, transparent 1px);
         background-size: 100% 25px;
-        overflow-y: auto;
+        overflow-y: hidden;
         overflow-x: hidden;
         scroll-behavior: smooth;
         scroll-snap-type: y mandatory;
+        scrollbar-width: none;  /* Firefox */
+        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    }
+
+    main::-webkit-scrollbar {
+        display: none;  /* WebKit */
     }
 
     .hero-section, .cards-section {
@@ -237,6 +316,10 @@
         position: relative;
         z-index: 1;
         display: flex;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
     }
 
     .pulpit-segment {
@@ -247,7 +330,7 @@
             4px 0 8px rgba(25, 29, 50, 0.15),
             inset 0 0 0 1px rgba(255, 255, 255, 0.25);
         border-right: 1px solid rgba(255, 255, 255, 0.2);
-        height: 85%;
+        height: 87.17%;
         width: 100%;
         display: flex;
         flex-direction: column;
@@ -353,25 +436,81 @@
         aspect-ratio: 1;
         border-radius: 50%;
         overflow: hidden;
+        pointer-events: none;
+        -webkit-user-drag: none;
+        user-select: none;
     }
 
     .logo img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        filter: brightness(0.9) contrast(1.1);  /* Add subtle filter */
+        filter: brightness(0.9) contrast(1.1);
+        pointer-events: none;
+        -webkit-user-drag: none;
+        user-select: none;
     }
 
     .cards-section {
         min-height: 100vh;
         padding: 4rem 2%;
-        background: rgba(25, 29, 50, 0.05);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        background-color: rgba(2, 83, 153, 0.95);
+        backdrop-filter: blur(15px) saturate(150%);
+        -webkit-backdrop-filter: blur(15px) saturate(150%);
+        box-shadow: 
+            4px 0 8px rgba(25, 29, 50, 0.15),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.25);
         position: relative;
+        overflow: hidden;
+    }
+
+    /* Paper texture and ruling for cards-section */
+    .cards-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            /* Notebook ruling */
+            repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 24px,
+                rgba(0, 20, 40, 0.2) 24px,
+                rgba(0, 20, 40, 0.2) 25px
+            ),
+            /* Noise texture */
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        background-size: 100% 25px, 150px 150px;
+        opacity: 0.5;
+        z-index: 0;
+        mix-blend-mode: multiply;
+    }
+
+    /* Dark mode update for the cards section */
+    :global(body.dark-mode) .cards-section {
+        background-color: rgba(1, 48, 91, 0.95);
+    }
+
+    :global(body.dark-mode) .cards-section::before {
+        background-image: 
+            repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 24px,
+                rgba(255, 255, 255, 0.5) 24px,
+                rgba(255, 255, 255, 0.5) 25px
+            ),
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        opacity: 0.4;
+        mix-blend-mode: soft-light;
     }
 
     .cards-container {
+        position: relative;
+        z-index: 1;
         max-width: 90%;
         margin: 0 auto;
         display: grid;
@@ -381,7 +520,7 @@
     }
 
     .card {
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.3);
@@ -390,9 +529,6 @@
             inset 0 0 0 1px rgba(255, 255, 255, 0.5);
         border-radius: 0.5rem;
         padding: 1.5rem;
-        box-shadow: 
-            0 4px 6px rgba(25, 29, 50, 0.2),
-            inset 0 0 20px rgba(25, 29, 50, 0.1);
         transition: transform 0.2s ease;
     }
 
@@ -600,6 +736,10 @@
             0 0 40px rgba(255,255,255,0.2),
             0 0 60px rgba(255,255,255,0.1);
         transform: rotate(-5deg);
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
     }
 
     @media (max-width: 768px) {
@@ -645,5 +785,48 @@
         .logo {
             width: 50%;
         }
+    }
+
+    .navigation-arrows {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 1000;
+    }
+
+    .nav-arrow {
+      background: rgba(25, 29, 50, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .nav-arrow:hover:not(:disabled) {
+      background: rgba(25, 29, 50, 1);
+      transform: scale(1.1);
+    }
+
+    .nav-arrow:disabled {
+      cursor: not-allowed;
+    }
+
+    :global(body.dark-mode) .nav-arrow {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    :global(body.dark-mode) .nav-arrow:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.3);
     }
 </style>
