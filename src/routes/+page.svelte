@@ -54,12 +54,6 @@
       isLoading = false;
     }, 500);
 
-    // Add Google Fonts link dynamically
-    const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-
     let scrollAccumulator = 0;
     let scrollTimeout;
 
@@ -244,6 +238,47 @@
 </main>
 
 <style>
+    /* Add local font declarations at the top of your styles */
+    @font-face {
+        font-family: 'Quicksand';
+        src: url('/fonts/Quicksand-Light.ttf') format('truetype');
+        font-weight: 300;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'Quicksand';
+        src: url('/fonts/Quicksand-Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'Quicksand';
+        src: url('/fonts/Quicksand-Medium.ttf') format('truetype');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'Quicksand';
+        src: url('/fonts/Quicksand-SemiBold.ttf') format('truetype');
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'Quicksand';
+        src: url('/fonts/Quicksand-Bold.ttf') format('truetype');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+    }
+
     :global(body), :global(html) {
         margin: 0;
         padding: 0;

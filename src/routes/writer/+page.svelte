@@ -217,11 +217,62 @@
     onMount(async () => {
         if (browser) {
             try {
-                // Add Google Fonts link dynamically first
-                const link = document.createElement('link');
-                link.href = 'https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap';
-                link.rel = 'stylesheet';
-                document.head.appendChild(link);
+                // Check URL parameter first
+                const darkParam = $page.url.searchParams.get('dark');
+                if (darkParam !== null) {
+                    isDarkMode = darkParam === 'true';
+                } else {
+                    // Fall back to localStorage if no URL parameter
+                    isDarkMode = localStorage.getItem('darkMode') === 'true';
+                }
+
+                // Apply dark mode class based on state
+                if (isDarkMode) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+
+                // Remove Google Fonts link and use local fonts instead
+                const style = document.createElement('style');
+                style.textContent = `
+                    @font-face {
+                        font-family: 'Quicksand';
+                        src: url('/fonts/Quicksand-Light.woff2') format('woff2');
+                        font-weight: 300;
+                        font-style: normal;
+                        font-display: swap;
+                    }
+                    @font-face {
+                        font-family: 'Quicksand';
+                        src: url('/fonts/Quicksand-Regular.woff2') format('woff2');
+                        font-weight: 400;
+                        font-style: normal;
+                        font-display: swap;
+                    }
+                    @font-face {
+                        font-family: 'Quicksand';
+                        src: url('/fonts/Quicksand-Medium.woff2') format('woff2');
+                        font-weight: 500;
+                        font-style: normal;
+                        font-display: swap;
+                    }
+                    @font-face {
+                        font-family: 'Quicksand';
+                        src: url('/fonts/Quicksand-SemiBold.woff2') format('woff2');
+                        font-weight: 600;
+                        font-style: normal;
+                        font-display: swap;
+                    }
+                    @font-face {
+                        font-family: 'Quicksand';
+                        src: url('/fonts/Quicksand-Bold.woff2') format('woff2');
+                        font-weight: 700;
+                        font-style: normal;
+                        font-display: swap;
+                    }
+                `;
+                document.head.appendChild(style);
 
                 // Then wait for fonts to load
                 await document.fonts.ready;
@@ -229,13 +280,6 @@
                 // Now load other fonts and initialize
                 loadFont(selectedFont);
                 loadBackgroundImage();
-                
-                // Check dark mode preference
-                const storedDarkMode = localStorage.getItem('darkMode') === 'true';
-                isDarkMode = storedDarkMode;
-                if (storedDarkMode) {
-                    document.body.classList.add('dark-mode');
-                }
                 
                 loadFiles();
                 
@@ -455,11 +499,24 @@
         chatPanelOpen = !chatPanelOpen;
     }
 
+    // Update the toggleDarkMode function
     function toggleDarkMode() {
         isDarkMode = !isDarkMode;
         if (browser) {
-            document.body.classList.toggle('dark-mode');
+            // Update localStorage
             localStorage.setItem('darkMode', isDarkMode);
+            
+            // Update body class
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            
+            // Update URL
+            const url = new URL(window.location.href);
+            url.searchParams.set('dark', isDarkMode);
+            window.history.replaceState({}, '', url);
         }
     }
 
@@ -661,26 +718,6 @@
         }
     }
 
-    // Initialize dark mode from URL parameter
-    $: {
-        if (browser && $page.url.searchParams) {
-            const darkParam = $page.url.searchParams.get('dark');
-            isDarkMode = darkParam === 'true';
-            if (isDarkMode) {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-        }
-    }
-
-    // Update URL when dark mode changes
-    $: if (browser && isDarkMode !== undefined) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('dark', isDarkMode);
-        window.history.replaceState({}, '', url);
-    }
-
     // Add loading state
     let isLoading = true;
 
@@ -697,13 +734,7 @@
 
 <!-- Add the loading overlay at the very top of your template -->
 <svelte:head>
-    <link 
-        rel="preload" 
-        href="https://fonts.gstatic.com/s/quicksand/v30/6xK-dSZaM9iE8KbpRA_LJ3z8mH9BOJvgkP8o58a-wjwxUD2GF9Zc.woff2" 
-        as="font" 
-        type="font/woff2" 
-        crossorigin
-    />
+    <!-- Remove the Google Fonts preload link -->
 </svelte:head>
 
 {#if isLoading}
