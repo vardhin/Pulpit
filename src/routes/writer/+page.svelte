@@ -740,7 +740,7 @@
 {#if isLoading}
     <div class="loading-overlay" class:fade-out={!isLoading}>
         <div class="loading-content">
-            <div class="loading-text" style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div class="loading-text" style="font-family: 'Quicksand', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
                 Pulpit!
             </div>
         </div>

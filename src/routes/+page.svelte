@@ -1,6 +1,8 @@
 <script>
   import HandwritingAnimation from '$lib/components/HandwritingAnimation.svelte';
   import AnimatedQuotes from '$lib/components/AnimatedQuotes.svelte';
+  import Navbar from '$lib/components/Navbar.svelte';
+  import Loadingscreen from '$lib/components/Loadingscreen.svelte';
   import { onMount } from 'svelte';
   
   // Initialize dark mode from localStorage
@@ -109,69 +111,8 @@
   }
 </script>
 
-{#if isLoading}
-  <div class="loading-overlay" class:fade-out={!isLoading}>
-    <div class="loading-content">
-      <div class="loading-text">Pulpit!</div>
-    </div>
-  </div>
-{/if}
-
-<nav>
-  <div class="nav-content">
-    <div class="nav-links">
-      <button on:click={() => scrollToSection('hero')}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
-        <span>Home</span>
-      </button>
-      <button on:click={() => scrollToSection('cards')}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7"></rect>
-          <rect x="14" y="3" width="7" height="7"></rect>
-          <rect x="14" y="14" width="7" height="7"></rect>
-          <rect x="3" y="14" width="7" height="7"></rect>
-        </svg>
-        <span>Lits</span>
-      </button>
-      <button 
-        class="dark-mode-toggle"
-        class:dark-mode={isDarkMode}
-        on:click={toggleDarkMode}
-        title="Toggle Dark Mode"
-      >
-        {#if isDarkMode}
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
-        {:else}
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-        {/if}
-      </button>
-      <a href="/writer?dark={isDarkMode}" class="nav-button">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-          <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
-          <path d="M2 2l7.586 7.586"></path>
-          <circle cx="11" cy="11" r="2"></circle>
-        </svg>
-        <span>Writer</span>
-      </a>
-    </div>
-  </div>
-</nav>
+<Navbar {isDarkMode} {toggleDarkMode} />
+<Loadingscreen {isLoading} />
 
 <main>
     <section id="hero" class="hero-section">
@@ -199,41 +140,88 @@
     <section id="cards" class="cards-section">
         <div class="cards-container">
             <div class="card">
-                <h3>Card Title</h3>
-                <p>Card content goes here...</p>
+                <div class="card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                    </svg>
+                </div>
+                <h3>Write</h3>
+                <p>Create beautiful, distraction-free content with our minimalist writing environment.</p>
+                <a href="/writer" class="card-link">Start Writing →</a>
             </div>
             <div class="card">
-                <h3>Card Title</h3>
-                <p>Card content goes here...</p>
+                <div class="card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                </div>
+                <h3>Read</h3>
+                <p>Discover thought-provoking articles and stories from our community of writers.</p>
+                <a href="/reader" class="card-link">Browse Library →</a>
             </div>
             <div class="card">
-                <h3>Card Title</h3>
-                <p>Card content goes here...</p>
+                <div class="card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                    </svg>
+                </div>
+                <h3>Forum</h3>
+                <p>Join discussions, share ideas, and connect with other writers in our community forum.</p>
+                <a href="/forum" class="card-link">Visit Forum →</a>
             </div>
         </div>
     </section>
 
-    <div class="navigation-arrows">
+    <div class="navigation-controls">
       <button 
-        class="nav-arrow up"
-        on:click={() => navigateSection('up')}
-        style="opacity: {currentSection === 'hero' ? '0.5' : '1'}"
-        disabled={currentSection === 'hero'}
+        class="dark-mode-toggle"
+        class:dark-mode={isDarkMode}
+        on:click={toggleDarkMode}
+        title="Toggle Dark Mode"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="18 15 12 9 6 15"></polyline>
-        </svg>
+        {#if isDarkMode}
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        {:else}
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        {/if}
       </button>
-      <button 
-        class="nav-arrow down"
-        on:click={() => navigateSection('down')}
-        style="opacity: {currentSection === 'cards' ? '0.5' : '1'}"
-        disabled={currentSection === 'cards'}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </button>
+
+      <div class="navigation-arrows">
+        <button 
+          class="nav-arrow up"
+          on:click={() => navigateSection('up')}
+          style="opacity: {currentSection === 'hero' ? '0.5' : '1'}"
+          disabled={currentSection === 'hero'}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+          </svg>
+        </button>
+        <button 
+          class="nav-arrow down"
+          on:click={() => navigateSection('down')}
+          style="opacity: {currentSection === 'cards' ? '0.5' : '1'}"
+          disabled={currentSection === 'cards'}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+      </div>
     </div>
 </main>
 
@@ -277,6 +265,31 @@
         font-weight: 700;
         font-style: normal;
         font-display: swap;
+    }
+
+    /* Add global font application after the font-face declarations */
+    :global(body) {
+        font-family: 'Quicksand', sans-serif;
+    }
+
+    /* Update the loading-text-unanimated class with smaller font sizes */
+    .loading-text-unanimated {
+        font-family: 'Quicksand', sans-serif;
+        font-size: 3.5rem;  /* Reduced from 5rem */
+        color: white;
+        font-weight: 400;
+        font-style: italic;
+        text-shadow: 
+            0 0 20px rgba(255,255,255,0.4),
+            0 0 40px rgba(255,255,255,0.2),
+            0 0 60px rgba(255,255,255,0.1);
+        transform: rotate(-5deg);
+    }
+
+    @media (max-width: 768px) {
+        .loading-text-unanimated {
+            font-size: 2rem;  /* Reduced from 3rem */
+        }
     }
 
     :global(body), :global(html) {
@@ -564,31 +577,120 @@
     }
 
     .card {
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.3);
         box-shadow: 
             0 8px 32px rgba(0, 0, 0, 0.1),
             inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        transition: transform 0.2s ease;
+        border-radius: 1rem;
+        padding: 2rem;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #025399, #0077CC);
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
 
     .card:hover {
         transform: translateY(-5px);
+        box-shadow: 
+            0 12px 48px rgba(0, 0, 0, 0.15),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    }
+
+    .card:hover::before {
+        opacity: 1;
+    }
+
+    .card-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(2, 83, 153, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #025399;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover .card-icon {
+        background: #025399;
+        color: white;
+        transform: scale(1.1);
     }
 
     .card h3 {
         color: #191D32;
-        margin-bottom: 1rem;
-        font-family: 'Times New Roman', serif;
+        margin: 0;
+        font-family: 'Quicksand', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 600;
     }
 
     .card p {
-        color: #191D32;
+        color: #4A5568;
         line-height: 1.6;
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .card-link {
+        margin-top: auto;
+        color: #025399;
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: gap 0.3s ease;
+    }
+
+    .card-link:hover {
+        gap: 0.75rem;
+    }
+
+    /* Dark mode styles */
+    :global(body.dark-mode) .card {
+        background: rgba(26, 32, 44, 0.95);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    :global(body.dark-mode) .card h3 {
+        color: #E2E8F0;
+    }
+
+    :global(body.dark-mode) .card p {
+        color: #A0AEC0;
+    }
+
+    :global(body.dark-mode) .card-icon {
+        background: rgba(255, 255, 255, 0.1);
+        color: #E2E8F0;
+    }
+
+    :global(body.dark-mode) .card:hover .card-icon {
+        background: #E2E8F0;
+        color: #1A202C;
+    }
+
+    :global(body.dark-mode) .card-link {
+        color: #90CDF4;
     }
 
     nav {
@@ -597,7 +699,7 @@
         left: 0;
         right: 0;
         z-index: 1000;
-        background-color: rgba(25, 29, 50, 0.95); /* Darker, more neutral color */
+        background-color: rgba(25, 29, 50, 0.95);
         border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -608,22 +710,30 @@
     .nav-content {
         max-width: 100%;
         margin: 0;
-        padding: 0.5rem 1.7rem;  /* Reduced padding */
+        padding: 0.5rem 1.7rem;
         display: flex;
-        justify-content: flex-start;
+        justify-content: space-between;
         align-items: center;
     }
 
     .nav-links {
         display: flex;
-        gap: 0.25rem;  /* Reduced gap */
-        padding: 0.15rem;  /* Reduced padding */
+        gap: 0.5rem;
+        padding: 0.5rem;
         background: rgba(255, 255, 255, 0.1);
-        border-radius: 0.5rem;  /* Slightly reduced border radius */
+        border-radius: 0.5rem;
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-links.left {
+        margin-right: auto;
+    }
+
+    .nav-links.right {
+        margin-left: auto;
     }
 
     .nav-links button,
@@ -633,15 +743,16 @@
         color: rgba(255, 255, 255, 0.9);
         font-family: 'Quicksand', sans-serif;
         font-weight: 500;
-        font-size: 0.85rem;  /* Reduced font size */
+        font-size: 0.85rem;
         cursor: pointer;
-        padding: 0.25rem 0.5rem;  /* Reduced padding */
+        padding: 0.5rem 0.75rem;
         transition: all 0.2s ease;
         display: flex;
         align-items: center;
-        gap: 0.35rem;  /* Reduced gap */
-        border-radius: 0.4rem;  /* Slightly reduced border radius */
+        gap: 0.5rem;
+        border-radius: 0.4rem;
         text-decoration: none;
+        white-space: nowrap;
     }
 
     .nav-links button:hover,
@@ -650,186 +761,43 @@
         background: rgba(255, 255, 255, 0.15);
     }
 
+    .navigation-controls {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      z-index: 1000;
+    }
+
     .dark-mode-toggle {
-        color: rgba(255, 255, 255, 0.9) !important;
+      background: rgba(25, 29, 50, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     .dark-mode-toggle:hover {
-        color: #ffffff !important;
-        background: rgba(255, 255, 255, 0.15) !important;
+      background: rgba(25, 29, 50, 1);
+      transform: scale(1.1);
     }
 
-    /* Update dark mode styles for the navigation */
-    :global(body.dark-mode) nav {
-        background-color: rgba(20, 24, 42, 0.95); /* Darker, more neutral color for dark mode */
-        border-bottom-color: rgba(255, 255, 255, 0.1);
+    :global(body.dark-mode) .dark-mode-toggle {
+      background: rgba(255, 255, 255, 0.2);
     }
 
-    :global(body.dark-mode) .nav-links {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.1);
-    }
-
-    :global(body.dark-mode) .nav-links button,
-    :global(body.dark-mode) .nav-links a.nav-button {
-        color: rgba(255, 255, 255, 0.9);
-    }
-
-    :global(body.dark-mode) .nav-links button:hover,
-    :global(body.dark-mode) .nav-links a.nav-button:hover {
-        color: #ffffff;
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Add CSS variables for consistent theming */
-    :global(:root) {
-        --bg-primary: rgba(255, 255, 255, 0.5);
-        --text-primary: #191D32;
-        --panel-shadow: rgba(0, 0, 0, 0.15);
-        --border-color: rgba(25, 29, 50, 0.35);
-        --hero-left-bg: #025399;
-    }
-
-    :global(body.dark-mode) {
-        --bg-primary: rgba(26, 32, 44, 0.7);
-        --text-primary: #EEEEEE;
-        --panel-shadow: rgba(0, 0, 0, 0.3);
-        --border-color: rgba(255, 255, 255, 0.1);
-        --hero-left-bg: #01305B;
-    }
-
-    /* Fix dark mode toggle button */
-    .dark-mode-toggle svg {
-        width: 1.125rem;
-        height: 1.125rem;
-        stroke: currentColor;
-    }
-
-    .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #000000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        opacity: 1;
-        transition: all 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
-    }
-
-    .loading-overlay.fade-out {
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .loading-content {
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .loading-text {
-        font-family: 'Quicksand', sans-serif;
-        font-size: 5rem;
-        color: white;
-        font-weight: 400;
-        font-style: italic;
-        opacity: 0;
-        transform: translateY(1.25rem) rotate(-5deg);
-        animation: textAnimation 2s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
-        text-shadow: 
-          0 0 20px rgba(255,255,255,0.4),
-          0 0 40px rgba(255,255,255,0.2),
-          0 0 60px rgba(255,255,255,0.1);
-    }
-
-    @keyframes textAnimation {
-        0% {
-            opacity: 0;
-            transform: translateY(1.875rem) rotate(-8deg) scale(0.95);
-            filter: blur(0.5rem);
-        }
-        25% {
-            opacity: 1;
-            transform: translateY(0) rotate(-5deg) scale(1);
-            filter: blur(0);
-        }
-        85% {
-            opacity: 1;
-            transform: translateY(0) rotate(-5deg) scale(1);
-            filter: blur(0);
-        }
-        100% {
-            opacity: 0;
-            transform: translateY(-1.25rem) rotate(-3deg) scale(1.05);
-            filter: blur(0.75rem);
-        }
-    }
-
-    .loading-text-unanimated {
-        font-family: 'Quicksand', sans-serif;
-        font-size: 3rem;
-        color: rgba(255, 255, 255, 0.95);
-        font-weight: 500;
-        font-style: italic;
-        text-shadow: 
-            0 0 20px rgba(255,255,255,0.4),
-            0 0 40px rgba(255,255,255,0.2),
-            0 0 60px rgba(255,255,255,0.1);
-        transform: rotate(-5deg);
-        user-select: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-    }
-
-    @media (max-width: 768px) {
-        .hero-section {
-            flex-direction: column;
-        }
-
-        .hero-left, .hero-right {
-            width: 100%;
-        }
-
-        .hero-left {
-            height: 40vh;
-        }
-
-        .hero-right {
-            height: 60vh;
-        }
-
-        .logo {
-            width: 40%;
-        }
-
-        .loading-text {
-            font-size: 3rem;
-        }
-
-        .loading-text-unanimated {
-            font-size: 2rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .nav-links span {
-            display: none;
-        }
-
-        .nav-links button,
-        .nav-links a.nav-button {
-            padding: 0.35rem;
-        }
-
-        .logo {
-            width: 50%;
-        }
+    :global(body.dark-mode) .dark-mode-toggle:hover {
+      background: rgba(255, 255, 255, 0.3);
     }
 
     .navigation-arrows {
