@@ -78,10 +78,10 @@
     }
 
     function isOverlapping(newPosition, newDimensions, safeZoneBounds) {
-        // Calculate buffer as 10% of the smaller safe zone dimension
-        const bufferSize = Math.min(safeZoneBounds.width, safeZoneBounds.height) * 0.1;
+        // Increase buffer to 15% of the smaller safe zone dimension for more spacing
+        const bufferSize = Math.min(safeZoneBounds.width, safeZoneBounds.height) * 0.15;
         
-        // Check safe zone boundaries with buffer
+        // Check safe zone boundaries with increased buffer
         if (newPosition.left < bufferSize ||
             newPosition.left + newDimensions.width > safeZoneBounds.width - bufferSize ||
             newPosition.top < bufferSize ||
@@ -89,18 +89,17 @@
             return true;
         }
 
-        // Check overlap with existing quotes
+        // Check overlap with existing quotes with increased spacing
         return quotePositions.some(existingQuote => {
-            // Calculate the minimum required spacing between quotes
-            const requiredSpacing = bufferSize;
+            // Increase the required spacing between quotes
+            const requiredSpacing = bufferSize * 1.2; // Increased from just bufferSize
 
-            // Check if quotes are too close horizontally
+            // Rest of the overlap detection logic remains the same
             const horizontalOverlap = Math.abs(
                 (newPosition.left + newDimensions.width / 2) - 
                 (existingQuote.left + existingQuote.width / 2)
             ) < (newDimensions.width / 2 + existingQuote.width / 2 + requiredSpacing);
 
-            // Check if quotes are too close vertically
             const verticalOverlap = Math.abs(
                 (newPosition.top + newDimensions.height / 2) - 
                 (existingQuote.top + existingQuote.height / 2)
@@ -115,11 +114,12 @@
         if (!safeZone) return null;
 
         const safeZoneBounds = safeZone.getBoundingClientRect();
-        const maxAttempts = 150; // Increased attempts for better distribution
-        const bufferSize = Math.min(safeZoneBounds.width, safeZoneBounds.height) * 0.1;
+        const maxAttempts = 150;
+        // Increase buffer size for grid calculation
+        const bufferSize = Math.min(safeZoneBounds.width, safeZoneBounds.height) * 0.15;
 
-        // Create a grid system for more organized placement
-        const gridSize = Math.max(dimensions.width, dimensions.height) + bufferSize * 2;
+        // Increase grid size for more spacing
+        const gridSize = Math.max(dimensions.width, dimensions.height) + bufferSize * 2.4; // Increased multiplier
         const cols = Math.floor(safeZoneBounds.width / gridSize);
         const rows = Math.floor(safeZoneBounds.height / gridSize);
 

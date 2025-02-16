@@ -60,12 +60,21 @@
     link.rel = 'stylesheet';
     document.head.appendChild(link);
 
+    let scrollAccumulator = 0;
+    let scrollTimeout;
+
     const handleWheel = (e) => {
       e.preventDefault();
-      if (e.deltaY > 0) {
-        navigateSection('down');
-      } else {
-        navigateSection('up');
+      
+      // Check if it's a fast scroll/flick (higher velocity)
+      const flickThreshold = 20; // Adjust this threshold as needed
+      
+      if (Math.abs(e.deltaY) > flickThreshold) {
+        if (e.deltaY > 0) {
+          navigateSection('down');
+        } else {
+          navigateSection('up');
+        }
       }
     };
 
@@ -330,7 +339,7 @@
             4px 0 8px rgba(25, 29, 50, 0.15),
             inset 0 0 0 1px rgba(255, 255, 255, 0.25);
         border-right: 1px solid rgba(255, 255, 255, 0.2);
-        height: 87.17%;
+        height: 81%;
         width: 100%;
         display: flex;
         flex-direction: column;
@@ -558,12 +567,13 @@
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+        height: 3.12rem;
     }
 
     .nav-content {
         max-width: 100%;
         margin: 0;
-        padding: 0.5rem 4rem;
+        padding: 0.5rem 1.7rem;  /* Reduced padding */
         display: flex;
         justify-content: flex-start;
         align-items: center;
@@ -571,10 +581,10 @@
 
     .nav-links {
         display: flex;
-        gap: 0.5rem;
-        padding: 0.25rem;
+        gap: 0.25rem;  /* Reduced gap */
+        padding: 0.15rem;  /* Reduced padding */
         background: rgba(255, 255, 255, 0.1);
-        border-radius: 0.625rem;
+        border-radius: 0.5rem;  /* Slightly reduced border radius */
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -586,16 +596,16 @@
         background: none;
         border: none;
         color: rgba(255, 255, 255, 0.9);
-        font-family: 'Quicksand', sans-serif; /* Updated font */
-        font-weight: 500; /* Added weight for Quicksand */
-        font-size: 0.95rem;
+        font-family: 'Quicksand', sans-serif;
+        font-weight: 500;
+        font-size: 0.85rem;  /* Reduced font size */
         cursor: pointer;
-        padding: 0.35rem 0.75rem;
+        padding: 0.25rem 0.5rem;  /* Reduced padding */
         transition: all 0.2s ease;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        border-radius: 0.5rem;
+        gap: 0.35rem;  /* Reduced gap */
+        border-radius: 0.4rem;  /* Slightly reduced border radius */
         text-decoration: none;
     }
 
